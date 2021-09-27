@@ -10,6 +10,7 @@ Valida a inclusão de NF, Este P.E. é chamado na função A103Tudok()
 /*/
 User Function MTA105OK()
 
+
 	Local lRet	:= .T.
 	Local nCont
 	Local cOrcSrv,nPos,nCust
