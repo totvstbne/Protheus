@@ -9,6 +9,7 @@ Valida a inclusão de NF, Este P.E. é chamado na função A103Tudok()
 @return lRet, Se Verdadeiro (.T.), atualizara o movimento, de acordo com os dados digitados pelo usuario ; Se for falso (.F.) nao prosseguira com a implantacao
 /*/
 User Function MTA105OK()
+
 	Local lRet	:= .T.
 	Local nCont
 	Local cOrcSrv,nPos,nCust
