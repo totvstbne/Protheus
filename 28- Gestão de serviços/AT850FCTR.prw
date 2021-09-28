@@ -1,6 +1,7 @@
 #include 'protheus.ch'
 #include 'parmtype.ch'
 #include "topconn.ch"
+//teste2
 /*/{Protheus.doc} AT850FCTR
 Gravação do Centro de Custo no Contrato
 	 gerar registro na CTT 
