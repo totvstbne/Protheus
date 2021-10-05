@@ -3,7 +3,7 @@
 Static cCodUsado	//Codigo reservado
 /*/{Protheus.doc} RCOMG01
 Gerar sequencial do código de produto
-//teste 10
+
 
 @type function
 @obs
