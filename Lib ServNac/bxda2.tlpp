@@ -1,0 +1,78 @@
+#Include "TbiConn.CH"
+
+
+User Function BXDA2()
+	//Local cEmp  := "01"
+	//Local cFil  := "020101"
+//	Local nLinha:= 0
+
+	//Prepare Environment EMPRESA cEmp FILIAL cFil
+
+	cArq := cGetFile()
+
+	If !File(cArq)
+		MsgStop("O arquivo " +AllTrim(cArq)+ " não foi encontrado. A importação será abortada!","ATENÇÃO")
+		Return
+	EndIf
+
+	FT_FUSE(cArq)
+
+	ProcRegua(FT_FLASTREC())
+
+	FT_FGOTOP()
+	nTotProc	:= 0
+	Do While !FT_FEOF()
+
+		IncProc("Lendo arquivo texto...")
+
+		cLinha := FT_FREADLN()
+
+		IF !Empty(cLinha)
+			_aLINHA := StrTokArr( cLinha, "|" )
+			cempant := "01"
+			CFILANT := alltrim(_aLINHA[1])
+
+			//010101|JUR|998-94||TF|2300
+
+			Begin Transaction
+
+
+				aBaixa := {{"E2_FILIAL" ,substr(CFILANT,1,2)+space(4)             ,Nil},;
+					{"E2_PREFIXO" ,replace(_aLINHA[2],"-","")+space(3-len(replace(_aLINHA[2],"-","")))              ,Nil},;
+					{"E2_NUM"	             ,_aLINHA[3]+space(9-len(_aLINHA[3]))                ,Nil},;
+					{"E2_TIPO"	             ,_aLINHA[5]+space(3-len(_aLINHA[5]))               ,Nil},;
+					{"E2_PARCELA"	         ,replace(_aLINHA[4],"-","")+space(2-len(replace(_aLINHA[4],"-","")))               ,Nil},;
+					{"E2_FORNECE"	         ,_aLINHA[6]               ,Nil},;
+					{"E2_LOJA"	             ,_aLINHA[7]               ,Nil},;
+					{"AUTMOTBX"	             ,"DA2"                ,Nil},;
+					{"AUTBANCO"              ,""                   ,Nil},;
+					{"AUTAGENCIA"            ,""             	   ,Nil},;
+					{"AUTCONTA"              ,""                   ,Nil},;
+					{"AUTDTBAIXA"            ,dDataBase            ,Nil},;
+					{"AUTDTCREDITO"          ,dDataBase            ,Nil},;
+					{"AUTHIST"	             ,"BAIXA CP FIN#" ,Nil},;
+					{"AUTJUROS"              ,0					   ,nIL},;
+					{"AUTVLRPG"              ,VAL(_aLINHA[8])                ,Nil }}
+
+
+
+			
+				ACESSAPERG("FIN080", .F.)
+			//	MSEXECAUTO({|x,y| FINA080(x,y)}, aBaixa, _nOpc)
+
+				lMsErroAuto := .F.
+				MSExecAuto({|x,y| FINA080(x,y)},aBaixa,3)
+				If lMsErroAuto
+					DisarmTransaction()
+					MostraErro()
+				EndIf
+			End Transaction
+
+
+		EndIF
+
+		FT_FSKIP()
+	EndDo
+	FT_FUSE()
+	//ALERT("Linhas processadas: "+cValToChar(nLinha)+", registros alterados: "+cValToChar(nTotProc))
+Return

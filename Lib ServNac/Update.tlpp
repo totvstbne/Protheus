@@ -1,0 +1,44 @@
+#Include "TbiConn.CH"
+
+
+User Function Update()
+	Local cEmp  := "01"
+	Local cFil  := "010101"
+	Local nLinha:= 0
+
+	Prepare Environment EMPRESA cEmp FILIAL cFil
+
+	cArq := cGetFile()
+
+	If !File(cArq)
+		MsgStop("O arquivo " +AllTrim(cArq)+ " não foi encontrado. A importação será abortada!","ATENÇÃO")
+		Return
+	EndIf
+
+	FT_FUSE(cArq)
+
+	ProcRegua(FT_FLASTREC())
+
+	FT_FGOTOP()
+	nTotProc	:= 0
+	Do While !FT_FEOF()
+
+		IncProc("Lendo arquivo texto...")
+
+		cLinha := FT_FREADLN()
+
+		IF !Empty(cLinha)
+			nProc := TcSqlExec(cLinha)
+			IF nProc < 0
+				ALERT("ERRO: "+cLinha + Char(13) + TCSqlError())
+            Else 
+                nLinha++
+				nTotProc += nProc
+			EndIF
+		EndIF
+
+		FT_FSKIP()
+	EndDo
+	FT_FUSE()
+	ALERT("Linhas processadas: "+cValToChar(nLinha)+", registros alterados: "+cValToChar(nTotProc))
+Return
