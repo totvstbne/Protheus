@@ -17,27 +17,35 @@ Local cArea   := GetArea()
 
  If nOpc == 5 // Se for rejeição
 
-    //################################################################################
-	//# Inicializa a gravacao dos lancamentos do SIGAPCO          					 #
-	//################################################################################
+ 	While SC7->(!Eof()) .And. SC7->C7_FILIAL+Substr(SC7->C7_NUM,1,len(SC7->C7_NUM)) == xFilial("SC7")+Substr(SCR->CR_NUM,1,len(SC7->C7_NUM))
+		
+		//################################################################################
+		//# Inicializa a gravacao dos lancamentos do SIGAPCO          					 #
+		//################################################################################
 
-	PcoIniLan("000055")
+		PcoIniLan("000055")
 
-	Begin Transaction
+		Begin Transaction
 
-	//################################################################################
-	//# Grava os lancamentos nas contas orcamentarias SIGAPCO                        #
-	//################################################################################
+		//################################################################################
+		//# Grava os lancamentos nas contas orcamentarias SIGAPCO                        #
+		//################################################################################
 
-	PcoDetLan("000055","01","MATA097",.T.) // Indica Exclusao do Lançamento do PCO	
+		PcoDetLan("000055","01","MATA097",.T.) // Indica Exclusao do Lançamento do PCO	
 
-	End Transaction
+		End Transaction
 
-	//################################################################################
-	//# Finaliza a gravacao dos lancamentos do SIGAPCO                               #
-	//################################################################################
+		//################################################################################
+		//# Finaliza a gravacao dos lancamentos do SIGAPCO                               #
+		//################################################################################
 
-	PcoFinLan("000055")
+		PcoFinLan("000055")
+
+		dbSelectArea("SC7")
+		dbSkip()
+	EndDo
+
+
 
  Endif
 
