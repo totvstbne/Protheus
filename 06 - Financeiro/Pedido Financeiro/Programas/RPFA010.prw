@@ -12,16 +12,18 @@ Aprovação em Lote
 @see (links_or_references)
 /*/
 user function RPFA010(nTipo)
+	Local aArea     := getArea()
 	Local aCoors	:= FWGetDialogSize( oMainWnd )
 	Local cFiltro	:= ""
 	Local cDescrp	:= ""
 	Local aLegenda	:= {}
+	Local nX
 	Private nValsel	:= 0
 	If nTipo == 1 //Aprovação Despesas Fixas
-		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER ==  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PF' .AND. CR_YDESPFX = 'S' "
+		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF' .AND. CR_YDESPFX = 'S' "
 		cDescrp	:= 'Aprovação Despesas Fixas'
 	Else //Aprovação em Lote PF
-		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER ==  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PF' "
+		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF' "
 		cDescrp	:= 'Aprovação em Lote'
 	Endif
 
@@ -63,6 +65,7 @@ user function RPFA010(nTipo)
 	oMark:SetFilterDefault(cFiltro)
 	oMark:Activate(oPanelTop1)
 	oDlgAp:Activate(,,,.T.)
+	RestArea(aArea)
 Return
 
 User Function fAprovSCR
@@ -186,7 +189,7 @@ User Function fMarcaTudo()
 	cQuery+= "WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery+= "CR_FILIAL = '"+xFilial("SCR")+"' AND "
 	cQuery+= "CR_YOK =  '"+oMark:Mark()+"' AND "
-	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_TIPO = 'PF' "
+	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_YTIPOPC = 'PF' "
 	tcQuery cQuery new Alias QRSCR
 	//Tem registros
 	If QRSCR->(!Eof())
@@ -199,14 +202,14 @@ User Function fMarcaTudo()
 	Else
 	cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = '"+oMark:Mark()+"' WHERE CR_YOK <> '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' "
 	Endif
-	cUpd+="AND CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_TIPO = 'PF' "
+	cUpd+="AND CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_YTIPOPC = 'PF' "
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
 	
 	cQuery:= "SELECT SUM(CR_TOTAL) TOTAL FROM "+RetSqlName("SCR")+" SCR "
 	cQuery+= "WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery+= "CR_FILIAL = '"+xFilial("SCR")+"' AND "
-	cQuery+= "CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_TIPO = 'PF' AND "
+	cQuery+= "CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_YTIPOPC = 'PF' AND "
 	cQuery+= "CR_YOK = '"+oMark:Mark()+"' "
 	tcQuery cQuery new Alias QRSCR
 	nValsel:= QRSCR->TOTAL //Total selecionado
