@@ -30,8 +30,8 @@ User Function MT120TEL()
 		nCombPCPF 	:= SC7->C7_YPCPF
 	EndIf
 				
-	@ 060,aPosGet[1,3]+200 SAY "PC/PF:" OF oNewDialog PIXEL //SIZE 050, 008
-	@ 061,aPosGet[1,4]+170 MSCOMBOBOX oComboBox1 VAR nCombPCPF ITEMS {"","PC=Pedido Compras","PF=Pedido Financeiro"} SIZE 55, 11 OF oNewDialog PIXEL SIZE 060, 006
+	@ 060,aPosGet[1,8] - 012 SAY "PC/PF:" OF oNewDialog PIXEL //SIZE 050, 008
+	@ 061,aPosGet[1,9] + 002 MSCOMBOBOX oComboBox1 VAR nCombPCPF ITEMS {"","PC=Pedido Compras","PF=Pedido Financeiro"} SIZE 70, 11 OF oNewDialog PIXEL SIZE 060, 006
 	oComboBox1:bHelp := {|| ShowHelpCpo( "C7_YPCPF", {GetHlpSoluc("C7_YPCPF")[1]}, 5  )}
 
 	If !lEdit
