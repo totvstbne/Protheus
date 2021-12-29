@@ -17,8 +17,9 @@ User Function MT120FIM
 	Local nOpcA     := PARAMIXB[3]
 	Local cCampMemo	:= ""
 	Local cPCPF		:= ""
+	Local _nREC7    := SC7->(RECNO())
+	Local _nRECR    := SCR->(RECNO())
 
-	
 	If nOpcA == 1 .and. !isInCallStack("u_faprovalc")
 		If !Empty(cPedido)
 			cQuery:= "SELECT R_E_C_N_O_ RECNO FROM "+RetSqlName("SC7")+" SC7 "
@@ -53,5 +54,7 @@ User Function MT120FIM
 			QRSCR->(dbCloseArea())
 		endif
 	EndIf
+	SC7->(dbGoto(_nREC7))
+	SCR->(dbGoto(_nRECR))
 	RestArea(aArea)
 return
