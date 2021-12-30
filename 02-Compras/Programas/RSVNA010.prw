@@ -287,8 +287,8 @@ User Function fRejPC()
 		DbSelectArea("SCR")
 		SCR->(dbGoto(TQCR->RECNO))
 
-//		ZA7->(dbSetOrder(3))
-//		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
+		ZA7->(dbSetOrder(3))
+		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
 
 		//Processa( { ||u_fRejeiPC( .T., TQCR->RECNO ) }, "Rejeitando o Pedido de Compras " + SCR->CR_NUM )
 		// Alterado por Alana Olivera em 21.12.21 -> Rejeita através de execauto
@@ -680,7 +680,7 @@ User Function RExec094()
  
         //-- Desativa o modelo de dados
         oModel094:DeActivate()
- 
+		
     Else
         MsgInfo("Documento não encontrado!", "MyExec094")
     EndIf
