@@ -216,8 +216,8 @@ User Function fAprPC()
 	while TQCR->(!Eof())
 
 		SCR->(dbGoto(TQCR->RECNO))
-		ZA7->(dbSetOrder(3))
-		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
+		// ZA7->(dbSetOrder(3))
+		// ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
 
 		//Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por " + AllTrim(cUserName))}, "Aprovando o Pedido de Compras. " + SCR->CR_NUM)
 		/*Alterado por Alana Oliveira em 21.12.21 - Liberação por execauto*/
@@ -587,6 +587,11 @@ User Function MyExec094()
  
             //-- Mostra a mensagem de Erro
             MostraErro()
+		Else
+			//-- Dispara inclusão de documento de entrada com base no pedido aprovado
+			//-- quanto for Pedido Financeiro
+			cStatus := SC7->C7_CONAPRO
+			cTipoPC := SC7->C7_YPCPF
         EndIf
  
         //-- Desativa o modelo de dados
