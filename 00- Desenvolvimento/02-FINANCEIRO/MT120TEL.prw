@@ -24,15 +24,18 @@ User Function MT120TEL()
     Local cCartao 
     Public cXOpera := ""
     Public cXCartao:= ""  
+    Public nCombPCPF := CriaVar("C7_YPCPF")
  
     //Define o conteúdo para os campos
     SC7->(DbGoTo(nRecPC))
     If nOpcx == 3
         cXOpera := CriaVar("C7_YBANDEI",.F.)
         cXCartao:= CriaVar("C7_YCARTAO",.F.)
+        nCombPCPF 	:= ""
     Else
-        cXOpera := SC7->C7_YBANDEI
-        cXCartao:= SC7->C7_YCARTAO
+        cXOpera  := SC7->C7_YBANDEI
+        cXCartao := SC7->C7_YCARTAO
+        nCombPCPF:= SC7->C7_YPCPF
     EndIf
  
     //Criando na janela o campo OBS
@@ -40,6 +43,9 @@ User Function MT120TEL()
     @ 061, aPosGet[1,09] - 006 MSGET cCartao VAR cXCartao SIZE 025, 006 OF oDlg COLORS 0, 16777215 PIXEL VALID (U_YVLDCART(cXCartao))
     @ 062, aPosGet[1,10] - 038 SAY Alltrim(RetTitle("C7_YBANDEI")) OF oDlg PIXEL SIZE 050,006
     @ 061, aPosGet[1,11] - 045 MSGET cOpera VAR cXOpera SIZE 025, 006 OF oDlg F3 "ZF1" COLORS 0, 16777215  PIXEL VALID (U_YVLDOPER(cXCartao,cXOpera))
+    @ 048, aPosGet[1,10] - 012 SAY "PC/PF:" OF oDlg PIXEL //SIZE 050, 008
+	@ 049, aPosGet[1,11] - 045 MSCOMBOBOX oComboBox1 VAR nCombPCPF ITEMS {"","PC=Pedido Compras","PF=Pedido Financeiro"} SIZE 70, 11 OF oDlg PIXEL SIZE 060, 006
+	oComboBox1:bHelp := {|| ShowHelpCpo( "C7_YPCPF", {GetHlpSoluc("C7_YPCPF")[1]}, 5  )}
     cCartao:bHelp := {|| ShowHelpCpo( "C7_YBANDEI", {GetHlpSoluc("C7_YBANDEI")[1]}, 5  )}
     cOpera:bHelp  := {|| ShowHelpCpo( "C7_YCARTAO", {GetHlpSoluc("C7_YCARTAO")[1]}, 5  )}
 
@@ -47,10 +53,13 @@ User Function MT120TEL()
     If !lEdit
         cOpera:lActive  := .F.
         cCartao:lActive := .F.
+        oComboBox1:lActive := .F.
     EndIf
  
     RestArea(aArea)
 Return
+
+
 
 /* 
 Função para validar operadora de cartão de crédito
