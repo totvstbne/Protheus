@@ -587,11 +587,7 @@ User Function MyExec094()
  
             //-- Mostra a mensagem de Erro
             MostraErro()
-		Else
-			//-- Dispara inclusão de documento de entrada com base no pedido aprovado
-			//-- quanto for Pedido Financeiro
-			cStatus := SC7->C7_CONAPRO
-			cTipoPC := SC7->C7_YPCPF
+	
         EndIf
  
         //-- Desativa o modelo de dados

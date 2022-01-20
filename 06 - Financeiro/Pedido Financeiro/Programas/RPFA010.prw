@@ -94,11 +94,6 @@ User Function fAprovSCR
 
 		Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por "+alltrim(cUserName))}, "Aprovando o Pedido Financeiro "+SCR->CR_NUM)
 		
-		//-- Grava Documento de entrada com base no pedido financeiro aprovado.
-		If SC7->C7_CONAPRO == "L" .and. SC7->C7_YPCPF = 'PF'
-			U_EXEC103(SC7->C7_FILIAL, SC7->C7_NUM, _xNum, _xSerie, _xEspecie)
-		EndIf
-		
 		Reclock("SCR",.F.)
 		SCR->CR_YLOTE 	:= cLtAp
 		SCR->CR_DATALIB	:= dDataBase
