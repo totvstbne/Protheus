@@ -20,10 +20,10 @@ user function RPFA010(nTipo)
 	Local nX
 	Private nValsel	:= 0
 	If nTipo == 1 //Aprovação Despesas Fixas
-		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF' .AND. CR_YDESPFX = 'S' "
+		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. ((CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF')  .OR. CR_TIPO = 'PF'  ) .AND. CR_YDESPFX = 'S' "
 		cDescrp	:= 'Aprovação Despesas Fixas'
 	Else //Aprovação em Lote PF
-		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF' "
+		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. ((CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF')  .OR. CR_TIPO = 'PF'  )"
 		cDescrp	:= 'Aprovação em Lote'
 	Endif
 

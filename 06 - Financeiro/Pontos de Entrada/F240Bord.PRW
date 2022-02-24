@@ -55,30 +55,29 @@ User Function F240Bord()
 	While !QBOR->(Eof())
 		if ALLTRIM(QBOR->EA_PORTADO) == "237"
 			dbSelectarea("SEA")
+			If ! ( alltrim(SEA->EA_MODELO) $ "13-16-17" )
+				dbGoto(QBOR->SEAREC)
+				Reclock("SEA",.F.)
+				IF !EMPTY(QBOR->E2_CODBAR)
+					if substr(QBOR->E2_CODBAR,1,3) == QBOR->EA_PORTADO
+						Replace EA_MODELO   With "30"
+						Replace EA_TIPOPAG  With "20"
+					ELSE
+						Replace EA_MODELO   With "31"
+						Replace EA_TIPOPAG  With "20"
+					ENDIF
+				ElseIf  !EMPTY(QBOR->A2_BANCO) .AND. !EMPTY(QBOR->A2_AGENCIA) .AND.  !EMPTY(QBOR->A2_NUMCON)
+					if QBOR->A2_BANCO == QBOR->EA_PORTADO  // TRANSFERENCIA MESMO BANDO
+						Replace EA_MODELO   With "01"
+						Replace EA_TIPOPAG  With "20"
+					ELSE // TED
+						Replace EA_MODELO   With "41"
+						Replace EA_TIPOPAG  With "20"
+					ENDIF
 
-			dbGoto(QBOR->SEAREC)
-
-			Reclock("SEA",.F.)
-
-			IF !EMPTY(QBOR->E2_CODBAR)
-				if substr(QBOR->E2_CODBAR,1,3) == QBOR->EA_PORTADO
-					Replace EA_MODELO   With "30"
-					Replace EA_TIPOPAG  With "20"
-				ELSE
-					Replace EA_MODELO   With "31"
-					Replace EA_TIPOPAG  With "20"
-				ENDIF
-			ElseIf  !EMPTY(QBOR->A2_BANCO) .AND. !EMPTY(QBOR->A2_AGENCIA) .AND.  !EMPTY(QBOR->A2_NUMCON)
-				if QBOR->A2_BANCO == QBOR->EA_PORTADO  // TRANSFERENCIA MESMO BANDO
-					Replace EA_MODELO   With "01"
-					Replace EA_TIPOPAG  With "20"
-				ELSE // TED
-					Replace EA_MODELO   With "41"
-					Replace EA_TIPOPAG  With "20"
-				ENDIF
-
-			Endif
-			Msunlock()
+				Endif
+				Msunlock()
+			EndIf
 		Endif
 
 
