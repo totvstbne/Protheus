@@ -12,16 +12,18 @@ Aprovação em Lote
 @see (links_or_references)
 /*/
 user function RPFA010(nTipo)
+	Local aArea     := getArea()
 	Local aCoors	:= FWGetDialogSize( oMainWnd )
 	Local cFiltro	:= ""
 	Local cDescrp	:= ""
 	Local aLegenda	:= {}
+	Local nX
 	Private nValsel	:= 0
 	If nTipo == 1 //Aprovação Despesas Fixas
-		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER ==  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PF' .AND. CR_YDESPFX = 'S' "
+		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. ((CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF')  .OR. CR_TIPO = 'PF'  ) .AND. CR_YDESPFX = 'S' "
 		cDescrp	:= 'Aprovação Despesas Fixas'
 	Else //Aprovação em Lote PF
-		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER ==  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PF' "
+		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. ((CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF')  .OR. CR_TIPO = 'PF'  )"
 		cDescrp	:= 'Aprovação em Lote'
 	Endif
 
@@ -63,6 +65,7 @@ user function RPFA010(nTipo)
 	oMark:SetFilterDefault(cFiltro)
 	oMark:Activate(oPanelTop1)
 	oDlgAp:Activate(,,,.T.)
+	RestArea(aArea)
 Return
 
 User Function fAprovSCR
@@ -74,31 +77,35 @@ User Function fAprovSCR
 	cQuery+= "CR_YOK = '"+oMark:Mark()+"' "
 	cQuery+= "ORDER BY R_E_C_N_O_ "
 	TcQuery cQuery new Alias TQCR
-	
+
 	If TQCR->(Eof())
 		TQCR->(dbCloseArea())
-		Alert("Não há itens selecionados")	
+		Alert("Não há itens selecionados")
 		Return
 	Endif
-	
+
 	cLtAp	:= GetSXENum("ZA7","ZA7_YLOTE","ZA71")
 	ConfirmSx8()
-	
+
 	while TQCR->(!Eof())
 		SCR->(dbGoto(TQCR->RECNO))
-		ZA7->(dbSetOrder(3))
-		ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
+		// ZA7->(dbSetOrder(3))
+		// ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
+
 		Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por "+alltrim(cUserName))}, "Aprovando o Pedido Financeiro "+SCR->CR_NUM)
+		
 		Reclock("SCR",.F.)
-			SCR->CR_YLOTE 	:= cLtAp
-			SCR->CR_DATALIB	:= dDataBase
+		SCR->CR_YLOTE 	:= cLtAp
+		SCR->CR_DATALIB	:= dDataBase
 		MsUnlock()
+
 		ZA7->(dbSetOrder(3))
-		ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
-		Reclock("ZA7",.F.)
+		If ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
+			Reclock("ZA7",.F.)
 			ZA7->ZA7_YLOTE := cLtAp
-		MsUnlock()
-	TQCR->(dbSkip())
+			MsUnlock()
+		EndIf
+		TQCR->(dbSkip())
 	Enddo
 	TQCR->(dbCloseArea())
 
@@ -106,6 +113,8 @@ User Function fAprovSCR
 	cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = ' ' WHERE CR_YOK = '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' "
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
+
+
 
 	msgInfo("Documentos selecionados aprovados")
 	RestArea(aArea)
@@ -123,24 +132,24 @@ Rejeitar Pedido Financeiro
 User Function fRejSCR
 	Local aArea := getArea()
 	Local cQuery := ""
-	
+
 	cQuery := " SELECT R_E_C_N_O_ RECNO  "
 	cQuery += " FROM " + RetSqlName("SCR") + " SCR "
 	cQuery += " WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery += " CR_YOK = '" + oMark:Mark() + "' "
 	cQuery += " ORDER BY R_E_C_N_O_ "
-	
+
 	TcQuery cQuery new Alias TQCR
 
 	If TQCR->(Eof())
 		TQCR->(dbCloseArea())
-		MsgAlert("Não há itens selecionados")	
+		MsgAlert("Não há itens selecionados")
 		Return
 	Endif
-	
+
 	cLtAp := GetSXENum("ZA7","ZA7_YLOTE","ZA71")
 	ConfirmSx8()
-	
+
 	while TQCR->(!Eof())
 		SCR->(dbGoto(TQCR->RECNO))
 		ZA7->(dbSetOrder(3))
@@ -148,26 +157,26 @@ User Function fRejSCR
 		Processa({||u_fRejeiPF(.T.)}, "Rejeitando o Pedido Financeiro "+SCR->CR_NUM)
 
 		Reclock("SCR",.F.)
-			SCR->CR_YLOTE := cLtAp
+		SCR->CR_YLOTE := cLtAp
 		MsUnlock()
 		ZA7->(dbSetOrder(3))
 		ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
 		Reclock("ZA7",.F.)
-			ZA7->ZA7_YLOTE := cLtAp
+		ZA7->ZA7_YLOTE := cLtAp
 		MsUnlock()
-		
-	TQCR->(dbSkip())
+
+		TQCR->(dbSkip())
 	Enddo
 	TQCR->(dbCloseArea())
 
 	//Seta para garantir que não será utilizada a marca
-	cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = ' ' WHERE CR_YOK = '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' " 
+	cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = ' ' WHERE CR_YOK = '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' "
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
 
 	msgInfo("Documentos selecionados rejeitados")
 	RestArea(aArea)
-	
+
 Return
 /*/{Protheus.doc} fMarcaTudo
 Marcação de todos os registros
@@ -180,13 +189,13 @@ Marcação de todos os registros
 /*/
 User Function fMarcaTudo()
 	Local lMarc:= .F.
-	
+
 	//Verifica se está marcado
 	cQuery:= "SELECT TOP 1 CR_NUM FROM "+RetSqlName("SCR")+" SCR "
 	cQuery+= "WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery+= "CR_FILIAL = '"+xFilial("SCR")+"' AND "
 	cQuery+= "CR_YOK =  '"+oMark:Mark()+"' AND "
-	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_TIPO = 'PF' "
+	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_YTIPOPC = 'PF' "
 	tcQuery cQuery new Alias QRSCR
 	//Tem registros
 	If QRSCR->(!Eof())
@@ -197,16 +206,16 @@ User Function fMarcaTudo()
 	If lMarc //Desmarca registros
 		cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = ' ' WHERE CR_YOK  = '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' "
 	Else
-	cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = '"+oMark:Mark()+"' WHERE CR_YOK <> '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' "
+		cUpd:="UPDATE "+RetSqlName("SCR")+" SET CR_YOK = '"+oMark:Mark()+"' WHERE CR_YOK <> '"+oMark:Mark()+"' AND CR_FILIAL = '"+xFilial("SCR")+"' "
 	Endif
-	cUpd+="AND CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_TIPO = 'PF' "
+	cUpd+="AND CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_YTIPOPC = 'PF' "
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
-	
+
 	cQuery:= "SELECT SUM(CR_TOTAL) TOTAL FROM "+RetSqlName("SCR")+" SCR "
 	cQuery+= "WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery+= "CR_FILIAL = '"+xFilial("SCR")+"' AND "
-	cQuery+= "CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_TIPO = 'PF' AND "
+	cQuery+= "CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND CR_YTIPOPC = 'PF' AND "
 	cQuery+= "CR_YOK = '"+oMark:Mark()+"' "
 	tcQuery cQuery new Alias QRSCR
 	nValsel:= QRSCR->TOTAL //Total selecionado

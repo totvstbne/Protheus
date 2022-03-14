@@ -118,12 +118,6 @@ WSMETHOD POST WSRECEIVE aprovacoes WSSERVICE MconsultApi
 		dDataBase	:= StoD(oAprov[nCont]:GetJsonText("Data"))
 		cStatus		:= oAprov[nCont]:GetJsonText("Status")
 		lOK			:= .T.
-		
-		cCR_NUM		:= oAprov[nCont]:GetJsonText("Chave")
-		cCR_TIPO	:= oAprov[nCont]:GetJsonText("Tipo")
-		cCR_OBS		:= oAprov[nCont]:GetJsonText("Obs")
-		cCR_APROV	:= oAprov[nCont]:GetJsonText("CodAprovador")
-		
 		IF AllTrim(oAprov[nCont]:GetJsonText("Tipo")) == "CP"
 			ConOut('iniciando APROVAÇÃO CP')
 			DbSelectArea("SE2")
@@ -134,7 +128,6 @@ WSMETHOD POST WSRECEIVE aprovacoes WSSERVICE MconsultApi
 				MsUnLock()
 				//cRet := '{"processado":true}'
 				ConOut('APROVAÇÃO CP '+AllTrim(oAprov[nCont]:GetJsonText("Chave")))
-				oAprov[nCont]["Obs"] := "Título Liberado com Sucesso!!!"
 				oAprov[nCont]["Ok"] := .T.
 			Else
 				oAprov[nCont]["Ok"] := .F.
@@ -160,86 +153,84 @@ WSMETHOD POST WSRECEIVE aprovacoes WSSERVICE MconsultApi
 				ConOut('APROVADOR INVÁLIDO!')
 			ENDIF
 
-		
-			if cCR_TIPO == "PF"
-				ConOut('iniciando APROVAÇÃO PF! Aprovador - '+_CAPROV)
-			ELSEIF  cCR_TIPO == "PC"
-				ConOut('iniciando APROVAÇÃO PC! Aprovador - '+_CAPROV)
-			ENDIF
-			if cCR_TIPO == "PF"
-				DbSelectArea("ZA7")
-				DbSetOrder(1)
-				DbSeek(xFilial("ZA7")+cCR_NUM)
-
-				DbSelectArea("SED")
-				DbSetOrder(1)
-				IF !DbSeek(xFilial("SED")+ZA7->ZA7_NATURE)
-					oAprov[nCont]["Ok"] := .F.
-					oAprov[nCont]["Erro"] := "Natureza inválida!"
-					lOK := .F.
-					ConOut('Natureza inválida!')
-				EndIF
-			EndIF
-			PswOrder(1)
-			IF PswSeek(cCR_APROV, .T. )
-				aUser := PswRet()
-				__cUserID := cCR_APROV
-				cUserName := aUser[1,2]
-			Else
-				oAprov[nCont]["Ok"] := .F.
-				oAprov[nCont]["Erro"] := "Usuário não encontrado!"
-				lOK	:= .F.
-				ConOut('Usuário não encontrado!')
-			EndIF
-			DbSelectArea("SCR")
-			DbSetOrder(2)
-			IF !DbSeek(xFilial("SCR")+cCR_TIPO+PadR(cCR_NUM,Len(SCR->CR_NUM))+cCR_APROV)
-				oAprov[nCont]["Ok"] := .F.
-				oAprov[nCont]["Erro"] := "Registro não encontrado"
-				lOK := .F.
-				ConOut('Registro não encontrado')
-			Else
-				IF lOk
-					SetFunName("MATA094")
-					oModel094  := FwLoadModel("MATA094")
-					oModel094:SetOperation(MODEL_OPERATION_UPDATE)
-
-					IF cStatus == "L"
-						A094SetOp(OP_LIB)
-					ElseIF cStatus == "R"
-						A094SetOp(OP_REJ)
-					EndIF
-					//oView := FWLoadView("MATA094")
-					oModel094:Activate()
-					oModelSCR := oModel094:GetModel("FieldSCR")
-					oModelSCR:LoadValue("CR_NUM"        ,cCR_NUM)
-					oModelSCR:LoadValue("CR_TIPO"       ,cCR_TIPO)
-					oModelSCR:LoadValue("CR_OBS"        ,cCR_OBS)
-					oModelSCR:LoadValue("CR_APROV"      ,_CAPROV)
-					//oModel094:SetValue("FieldSCR","CR_GRUPO"      ,cCR_GRUPO)
-					oModelSCR:LoadValue("CR_DATALIB"    ,dDataBase)
-
-					If oModel094:VldData()
-						oModel094:CommitData()
-						//cRet := '{"processado":true}'
-						oAprov[nCont]["Ok"] := .T.
-						oAprov[nCont]["Obs"] := "Registro Liberado com Sucesso!!!"
-						ConOut('APROVAÇÃO PEDIDO OK'+cCR_NUM)
-					Else
-						aErro := oModel094:GetErrorMessage()
-						oAprov[nCont]["Ok"] := .F.
-						oAprov[nCont]["Erro"] := aErro[6]
-						lOk := .F.
-						//cRet := '{"processado":false, erro:"'+aErro[6]+'"}'
-						//MsgInfo(aErro[6])
-						//VarInfo("",aErro)
-						ConOut('APROVAÇÃO PEDIDO ERRO'+cCR_NUM+"-"+aErro[6])
-					EndIf
-					oModel094:DeActivate()
-					oModel094:Destroy()
-				EndIF
-			EndIF
 		endif
+		if cCR_TIPO == "PF"
+			ConOut('iniciando APROVAÇÃO PF! Aprovador - '+_CAPROV)
+		ELSEIF  cCR_TIPO == "PC"
+			ConOut('iniciando APROVAÇÃO PC! Aprovador - '+_CAPROV)
+		ENDIF
+		if cCR_TIPO == "PF"
+			DbSelectArea("ZA7")
+			DbSetOrder(1)
+			DbSeek(xFilial("ZA7")+cCR_NUM)
+
+			DbSelectArea("SED")
+			DbSetOrder(1)
+			IF !DbSeek(xFilial("SED")+ZA7->ZA7_NATURE)
+				oAprov[nCont]["Ok"] := .F.
+				oAprov[nCont]["Erro"] := "Natureza inválida!"
+				lOK := .F.
+				ConOut('Natureza inválida!')
+			EndIF
+		EndIF
+		PswOrder(1)
+		IF PswSeek(cCR_APROV, .T. )
+			aUser := PswRet()
+			__cUserID := cCR_APROV
+			cUserName := aUser[1,2]
+		Else
+			oAprov[nCont]["Ok"] := .F.
+			oAprov[nCont]["Erro"] := "Usuário não encontrado!"
+			lOK	:= .F.
+			ConOut('Usuário não encontrado!')
+		EndIF
+		DbSelectArea("SCR")
+		DbSetOrder(2)
+		IF !DbSeek(xFilial("SCR")+cCR_TIPO+PadR(cCR_NUM,Len(SCR->CR_NUM))+cCR_APROV)
+			oAprov[nCont]["Ok"] := .F.
+			oAprov[nCont]["Erro"] := "Registro não encontrado"
+			lOK := .F.
+			ConOut('Registro não encontrado')
+		Else
+			IF lOk
+				SetFunName("MATA094")
+				oModel094  := FwLoadModel("MATA094")
+				oModel094:SetOperation(MODEL_OPERATION_UPDATE)
+
+				IF cStatus == "L"
+					A094SetOp(OP_LIB)
+				ElseIF cStatus == "R"
+					A094SetOp(OP_REJ)
+				EndIF
+				//oView := FWLoadView("MATA094")
+				oModel094:Activate()
+				oModelSCR := oModel094:GetModel("FieldSCR")
+				oModelSCR:LoadValue("CR_NUM"        ,cCR_NUM)
+				oModelSCR:LoadValue("CR_TIPO"       ,cCR_TIPO)
+				oModelSCR:LoadValue("CR_OBS"        ,cCR_OBS)
+				oModelSCR:LoadValue("CR_APROV"      ,_CAPROV)
+				//oModel094:SetValue("FieldSCR","CR_GRUPO"      ,cCR_GRUPO)
+				oModelSCR:LoadValue("CR_DATALIB"    ,dDataBase)
+
+				If oModel094:VldData()
+					oModel094:CommitData()
+					//cRet := '{"processado":true}'
+					oAprov[nCont]["Ok"] := .T.
+					ConOut('APROVAÇÃO PEDIDO OK'+cCR_NUM)
+				Else
+					aErro := oModel094:GetErrorMessage()
+					oAprov[nCont]["Ok"] := .F.
+					oAprov[nCont]["Erro"] := aErro[6]
+					lOk := .F.
+					//cRet := '{"processado":false, erro:"'+aErro[6]+'"}'
+					//MsgInfo(aErro[6])
+					//VarInfo("",aErro)
+					ConOut('APROVAÇÃO PEDIDO ERRO'+cCR_NUM+"-"+aErro[6])
+				EndIf
+				oModel094:DeActivate()
+				oModel094:Destroy()
+			EndIF
+		EndIF
 
 		cRet += FWJsonSerialize(oAprov[nCont], .F., .F., .T.)
 		IF nCont < Len(oAprov)

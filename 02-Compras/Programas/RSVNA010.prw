@@ -111,6 +111,7 @@ Static Function fTelaAprov()
 	Local cDescrp	:= ""
 	Local aLegenda	:= {}
 	Local aCoors    := FWGetDialogSize( oMainWnd )
+	Local nx  
 
 	// cFiltro := "CR_FILIAL = '" + xFilial("SCR") + "' .AND. CR_USER ==  '" + RetCodUsr() + "' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' "
 	cFiltro := "CR_FILIAL = '" + xFilial("SCR") + "' .AND. CR_USER ==  '" + RetCodUsr() + "' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' "
@@ -213,16 +214,18 @@ User Function fAprPC()
 	//ConfirmSx8()
 
 	while TQCR->(!Eof())
+
 		SCR->(dbGoto(TQCR->RECNO))
-		ZA7->(dbSetOrder(3))
-		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
+		// ZA7->(dbSetOrder(3))
+		// ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
 
-		Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por " + AllTrim(cUserName))}, "Aprovando o Pedido de Compras. " + SCR->CR_NUM)
-
-		Reclock("SCR",.F.)
-		//SCR->CR_YLOTE 	:= cLtAp
-		SCR->CR_DATALIB	:= dDataBase
-		MsUnlock()
+		//Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por " + AllTrim(cUserName))}, "Aprovando o Pedido de Compras. " + SCR->CR_NUM)
+		/*Alterado por Alana Oliveira em 21.12.21 - Liberação por execauto*/
+		Processa({||U_MyExec094()}, "Aprovando o Pedido de Compras. " + SCR->CR_NUM)
+		
+		//Reclock("SCR",.F.)
+		//	SCR->CR_DATALIB	:= dDataBase
+		//MsUnlock()
 
 		//		ZA7->(dbSetOrder(3))
 		//		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
@@ -232,7 +235,9 @@ User Function fAprPC()
 		//		MsUnlock()
 
 		TQCR->(dbSkip())
+
 	Enddo
+
 	TQCR->(dbCloseArea())
 
 	//Seta para garantir que não será utilizada a marca
@@ -240,7 +245,7 @@ User Function fAprPC()
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
 
-	MsgInfo("Documentos selecionados aprovados")
+	MsgInfo("Documentos selecionados aprovados","Sucesso")
 	RestArea(aArea)
 Return
 
@@ -271,6 +276,10 @@ User Function fRejPC()
 		Return
 	Endif
 
+	If !(msgYesNo("Confirma a rejeição do Pedido de Compras?","Rejeição em Lote"))
+		Return
+	Endif
+
 	//	cLtAp := GetSXENum("ZA7", "ZA7_YLOTE", "ZA71")
 	//	ConfirmSx8()
 
@@ -278,10 +287,12 @@ User Function fRejPC()
 		DbSelectArea("SCR")
 		SCR->(dbGoto(TQCR->RECNO))
 
-//		ZA7->(dbSetOrder(3))
-//		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
+		ZA7->(dbSetOrder(3))
+		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
 
-		Processa( { ||u_fRejeiPC( .T., TQCR->RECNO ) }, "Rejeitando o Pedido de Compras " + SCR->CR_NUM )
+		//Processa( { ||u_fRejeiPC( .T., TQCR->RECNO ) }, "Rejeitando o Pedido de Compras " + SCR->CR_NUM )
+		// Alterado por Alana Olivera em 21.12.21 -> Rejeita através de execauto
+		Processa( { ||u_RExec094()}, "Rejeitando o Pedido de Compras " + SCR->CR_NUM )
 
 //		Reclock("SCR",.F.)
 //		SCR->CR_YLOTE := cLtAp
@@ -304,7 +315,7 @@ User Function fRejPC()
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
 
-	msgInfo("Documentos selecionados rejeitados")
+	msgInfo("Documentos selecionados rejeitados","Sucesso")
 	RestArea(aArea)
 
 Return
@@ -508,3 +519,168 @@ User Function fRejeiPC(lProcLote, cRECNO)
 		Endif
 	Endif
 Return
+
+/*Execauto para liberação de documentos*/
+
+User Function MyExec094()
+ 
+    Local oModel094 := Nil      //-- Objeto que receberá o modelo da MATA094
+    Local cNum      := SCR->CR_NUM //-- Recebe o número do documento a ser avaliado
+    Local cTipo     := SCR->CR_TIPO  //-- Recebe o tipo do documento a ser avaliado
+    Local cAprov    := RetCodUsr() //-- Recebe o código do aprovador do documento
+    Local nLenSCR   := 0        //-- Controle de tamanho de campo do documento
+    Local lOk       := .T.      //-- Controle de validação e commit
+    Local aErro     := {}       //-- Recebe msg de erro de processamento
+	Local aArea     := getArea()
+
+    nLenSCR := TamSX3("CR_NUM")[1] //-- Obtem tamanho do campo CR_NUM
+    DbSelectArea("SCR")
+    SCR->(DbSetOrder(2)) //-- CR_FILIAL+CR_TIPO+CR_NUM+CR_USER
+
+	DbSelectArea("SC7")
+    SC7->(dbSetOrder(1))
+    		
+	SC7->(dbSeek(xFilial("SC7")+AllTrim(SCR->CR_NUM)))
+ 
+    If SCR->(DbSeek(xFilial("SCR") + cTipo + Padr(cNum, nLenSCR) + cAprov))
+ 
+        //-- Códigos de operações possíveis:
+        //--    "001" // Liberado
+        //--    "002" // Estornar
+        //--    "003" // Superior
+        //--    "004" // Transferir Superior
+        //--    "005" // Rejeitado
+        //--    "006" // Bloqueio
+        //--    "007" // Visualizacao
+ 
+        //-- Seleciona a operação de aprovação de documentos
+        A094SetOp('001')
+ 
+        //-- Carrega o modelo de dados e seleciona a operação de aprovação (UPDATE)
+        oModel094 := FWLoadModel('MATA094')
+        oModel094:SetOperation( MODEL_OPERATION_UPDATE )
+        oModel094:Activate()
+ 
+        //-- Valida o formulário
+        lOk := oModel094:VldData()
+ 
+        If lOk
+            //-- Se validou, grava o formulário
+            lOk := oModel094:CommitData()
+        EndIf
+ 
+        //-- Avalia erros
+        If !lOk
+            //-- Busca o Erro do Modelo de Dados
+            aErro := oModel094:GetErrorMessage()
+                  
+            //-- Monta o Texto que será mostrado na tela
+            AutoGrLog("Id do formulário de origem:" + ' [' + AllToChar(aErro[01]) + ']')
+            AutoGrLog("Id do campo de origem: "     + ' [' + AllToChar(aErro[02]) + ']')
+            AutoGrLog("Id do formulário de erro: "  + ' [' + AllToChar(aErro[03]) + ']')
+            AutoGrLog("Id do campo de erro: "       + ' [' + AllToChar(aErro[04]) + ']')
+            AutoGrLog("Id do erro: "                + ' [' + AllToChar(aErro[05]) + ']')
+            AutoGrLog("Mensagem do erro: "          + ' [' + AllToChar(aErro[06]) + ']')
+            AutoGrLog("Mensagem da solução:"        + ' [' + AllToChar(aErro[07]) + ']')
+            AutoGrLog("Valor atribuído: "           + ' [' + AllToChar(aErro[08]) + ']')
+            AutoGrLog("Valor anterior: "            + ' [' + AllToChar(aErro[09]) + ']')
+ 
+            //-- Mostra a mensagem de Erro
+            MostraErro()
+	
+        EndIf
+ 
+        //-- Desativa o modelo de dados
+        oModel094:DeActivate()
+ 
+    Else
+        MsgInfo("Documento não encontrado!", "MyExec094")
+    EndIf
+
+	RestArea(aArea) 
+ 
+Return Nil
+
+/* Execauto para rejeição de documento*/
+
+User Function RExec094()   
+
+    Local oModel094 := Nil                    //-- Objeto que receberá o modelo da MATA094
+    Local cNum      := SCR->CR_NUM            //-- Recebe o número do documento a ser avaliado
+    Local cTipo     := SCR->CR_TIPO          //-- Recebe o tipo do documento a ser avaliado
+    Local cAprov    := RetCodUsr()           //-- Recebe o código do aprovador do documento
+    Local cJustif   := "Rejeição em lote"    //-- Recebe a justificativa para rejeição
+    Local nLenSCR   := 0                      //-- Controle de tamanho de campo do documento
+    Local lOk       := .T.                    //-- Controle de validação e commit
+    Local aErro     := {}                     //-- Recebe msg de erro de processamento
+	Local aArea     := getArea()
+
+    nLenSCR := TamSX3("CR_NUM")[1] //-- Obtem tamanho do campo CR_NUM
+    DbSelectArea("SCR")
+    SCR->(DbSetOrder(2)) //-- CR_FILIAL+CR_TIPO+CR_NUM+CR_USER
+
+ 	DbSelectArea("SC7")
+    SC7->(dbSetOrder(1))
+    		
+	SC7->(dbSeek(xFilial("SC7")+AllTrim(SCR->CR_NUM)))
+	
+    If SCR->(DbSeek(xFilial("SCR") + cTipo + Padr(cNum, nLenSCR) + cAprov))
+ 
+        //-- Códigos de operações possíveis:
+        //-- "001" // Liberado
+        //-- "002" // Estornar
+        //-- "003" // Superior
+        //-- "004" // Transferir Superior
+        //-- "005" // Rejeitado
+        //-- "006" // Bloqueio
+        //-- "007" // Visualizacao
+ 
+        //-- Seleciona a operação de rejeição de documentos
+        A094SetOp('005')
+ 
+        //-- Carrega o modelo de dados e seleciona a operação de aprovação (UPDATE)
+        oModel094 := FWLoadModel('MATA094')
+        oModel094:SetOperation( MODEL_OPERATION_UPDATE )
+        oModel094:Activate()
+ 
+        //-- Preenche justificativa
+        oModel094:GetModel('FieldSCR'):SetValue('CR_OBS', cJustif)
+ 
+        //-- Valida o formulário
+        lOk := oModel094:VldData()
+ 
+        If lOk
+            //-- Se validou, grava o formulário
+            lOk := oModel094:CommitData()
+        EndIf
+ 
+        //-- Avalia erros
+        If !lOk
+            //-- Busca o Erro do Modelo de Dados
+            aErro := oModel094:GetErrorMessage()
+ 
+            //-- Monta o Texto que será mostrado na tela
+            AutoGrLog("Id do formulário de origem:" + ' [' + AllToChar(aErro[01]) + ']')
+            AutoGrLog("Id do campo de origem: "     + ' [' + AllToChar(aErro[02]) + ']')
+            AutoGrLog("Id do formulário de erro: "  + ' [' + AllToChar(aErro[03]) + ']')
+            AutoGrLog("Id do campo de erro: "       + ' [' + AllToChar(aErro[04]) + ']')
+            AutoGrLog("Id do erro: "                + ' [' + AllToChar(aErro[05]) + ']')
+            AutoGrLog("Mensagem do erro: "          + ' [' + AllToChar(aErro[06]) + ']')
+            AutoGrLog("Mensagem da solução:"        + ' [' + AllToChar(aErro[07]) + ']')
+            AutoGrLog("Valor atribuído: "           + ' [' + AllToChar(aErro[08]) + ']')
+            AutoGrLog("Valor anterior: "            + ' [' + AllToChar(aErro[09]) + ']')
+ 
+            //-- Mostra a mensagem de Erro
+            MostraErro()
+        EndIf
+ 
+        //-- Desativa o modelo de dados
+        oModel094:DeActivate()
+		
+    Else
+        MsgInfo("Documento não encontrado!", "MyExec094")
+    EndIf
+
+	RestArea(aArea)
+
+Return Nil
