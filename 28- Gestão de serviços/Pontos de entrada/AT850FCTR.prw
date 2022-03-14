@@ -453,7 +453,12 @@ user function AT850FCTR()
 			//{'CTT_DESC01' , substr(CN9_NUMERO,6,11) + "-" + SA1->A1_NOME	, Nil},;	// Indica a Nomenclatura do Centro de Custo na Moeda 1
 			//{'CTT_DESC01' , cValToChar(INT(VAL(substr(CN9_NUMERO,6,11)))) + "-" + AllTrim(JF03->ABS_DESCRI), Nil},;	// Indica a Nomenclatura do Centro de Custo na Moeda 1
 			cDesc01 := cValToChar(INT(VAL(substr(CN9_NUMERO,6,11)))) + "-" + AllTrim(JF03->ABS_DESCRI)
-
+			_cria := .t.
+			DbSelectArea("CTT")
+			DbSetOrder(1)
+			IF DbSeek(xFilial("CTT")+cCodCC)
+				_cria := .f.
+			endif
 			aDadosAuto := {{'CTT_FILIAL', substr(cFilant,1,2)	, Nil},;	// Especifica qual o Código do Centro de Custo.
 			{'CTT_CUSTO'  , cCodCC	    			    , Nil},;	// Especifica qual o Código do Centro de Custo.
 			{'CTT_CLASSE' , "2"						    , Nil},;	// Especifica a classe do Centro de Custo, que  poderá ser: - Sintética: Centros de Custo totalizadores dos Centros de Custo Analíticos - Analítica: Centros de Custo que recebem os valores dos lançamentos contábeis
@@ -484,7 +489,7 @@ user function AT850FCTR()
 
 			JF03->(dbCloseArea())
 
-			If substr(cFilant,1,2) $ alltrim(superGetMv("SV_GERCC",,"01/02/03/04/05/06/07"))
+			If _cria .and. substr(cFilant,1,2) $ alltrim(superGetMv("SV_GERCC",,"01/02/03/04/05/06/07"))
 				lMsErroAuto := .F.
 				MSExecAuto({|x, y| CTBA030(x, y)},aDadosAuto, 3)
 

@@ -118,6 +118,12 @@ WSMETHOD POST WSRECEIVE aprovacoes WSSERVICE MconsultApi
 		dDataBase	:= StoD(oAprov[nCont]:GetJsonText("Data"))
 		cStatus		:= oAprov[nCont]:GetJsonText("Status")
 		lOK			:= .T.
+		
+		cCR_NUM		:= oAprov[nCont]:GetJsonText("Chave")
+		cCR_TIPO	:= oAprov[nCont]:GetJsonText("Tipo")
+		cCR_OBS		:= oAprov[nCont]:GetJsonText("Obs")
+		cCR_APROV	:= oAprov[nCont]:GetJsonText("CodAprovador")
+		
 		IF AllTrim(oAprov[nCont]:GetJsonText("Tipo")) == "CP"
 			ConOut('iniciando APROVAÇÃO CP')
 			DbSelectArea("SE2")

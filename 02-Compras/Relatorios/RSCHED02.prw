@@ -33,7 +33,7 @@ return
 
 User Function RCOMW01()
 
-	CQUERY :=  	"   SELECT CR.CR_FILIAL FILIAL, CR.CR_NUM NUM, CR.CR_TIPO TIPO, CR.CR_NIVEL NIVEL, CR.CR_GRUPO GRUPO, CR.CR_EMISSAO EMISSAO, CR.CR_TOTAL TOTAL, CR2.CR_USER USUARIO, CR2.CR_DATALIB DATALIB "
+	CQUERY :=  	"   SELECT CR.CR_FILIAL FILIAL, CR.CR_NUM NUM, CR.CR_TIPO TIPO, CR.CR_NIVEL NIVEL, CR.CR_GRUPO GRUPO, CR.CR_EMISSAO EMISSAO, CR.CR_TOTAL TOTAL, CR2.CR_USER USUARIO, CR2.CR_DATALIB DATALIB, CR2.CR_YHORA HORALIB "
 	CQUERY +=  	" 	FROM "+RETSQLNAME("SCR")+" CR "
 	CQUERY +=  	" 	INNER JOIN "+RETSQLNAME("SCR")+" CR2 ON CR2.CR_FILIAL = CR.CR_FILIAL AND CR2.CR_NUM = CR.CR_NUM AND CR2.CR_USER = '000166' AND CR2.CR_STATUS = '03' AND CR2.D_E_L_E_T_ = ' ' AND CR2.CR_GRUPO = CR.CR_GRUPO AND CR2.CR_DATALIB <> ' ' "
 	CQUERY +=  	" 	WHERE CR.CR_USER = '000069' AND CR.D_E_L_E_T_ = ' ' AND CR.CR_STATUS = '02' ORDER BY CR.CR_TIPO, CR.CR_FILIAL "
@@ -52,8 +52,10 @@ User Function RCOMW01()
 	_cHtml += " <th style='text-align:left;'>Emissão</th>"
 	_cHtml += " <th style='text-align:left;'>Aprovador 1</th>"
 	_cHtml += " <th style='text-align:left;'>Data Liberação 1</th>"
+	_cHtml += " <th style='text-align:left;'>Hora Liberação 1</th>"
 	_cHtml += " <th style='text-align:left;'>Aprovador 2</th>"
 	_cHtml += " <th style='text-align:left;'>Data Liberação 2</th>"
+	_cHtml += " <th style='text-align:left;'>Hora Liberação 2</th>"
 	_cHtml += " <th style='text-align:left;'>Valor</th>"
 	_cHtml += " <th style='text-align:left;'>Mensagem</th>"
 
@@ -82,7 +84,7 @@ User Function RCOMW01()
 
 		ENDIF
 		_imp := .t.
-		cquery := " SELECT CR_USERLIB, CR_DATALIB, CR_NIVEL FROM "+RETSQLNAME("SCR")+" WHERE CR_FILIAL = '"+T01->FILIAL+"' AND CR_TIPO = '"+T01->TIPO+"' AND CR_NUM = '"+T01->NUM+"' AND CR_STATUS = '03' AND D_E_L_E_T_ = ' ' ORDER BY CR_NIVEL"
+		cquery := " SELECT CR_USERLIB, CR_DATALIB, CR_NIVEL, CR_YHORA FROM "+RETSQLNAME("SCR")+" WHERE CR_FILIAL = '"+T01->FILIAL+"' AND CR_TIPO = '"+T01->TIPO+"' AND CR_NUM = '"+T01->NUM+"' AND CR_STATUS = '03' AND D_E_L_E_T_ = ' ' ORDER BY CR_NIVEL"
 
 		TcQuery cQuery new alias "T02"
 
@@ -99,10 +101,12 @@ User Function RCOMW01()
 			IF !T02->(EOF())
 				_cHtml += " <td style='text-align:left;'>" + RTRIM(FwGetUserName(T02->CR_USERLIB)) + "</td> "
 				_cHtml += " <td style='text-align:left;'>" + RTRIM(DTOC(STOD(T02->CR_DATALIB))) + "</td> "
+				_cHtml += " <td style='text-align:left;'>" + RTRIM(T02->CR_YHORA) + "</td> "
 				T02->(DBSKIP())
 			ELSE
 				_cHtml += " <td style='text-align:left;'>" + RTRIM("") + "</td> "
 				_cHtml += " <td style='text-align:left;'>" + RTRIM(DTOC(STOD(""))) + "</td> "
+				_cHtml += " <td style='text-align:left;'>" + RTRIM("") + "</td> "
 			ENDIF
 
 			_NCONT4++
@@ -268,7 +272,7 @@ User Function RCOMW01()
 
 
 	cAssunto := "PC_PF APROVADOS PELA CONTROLADORIA"
-	cPara := "vicentejuniormanager@gmail.com;controller3@gruposervnac.com.br;controller2@gruposervnac.com.br;gerenteti@gruposervnac.com.br"
+	cPara := "vicentejuniormanager@gmail.com;controller3@gruposervnac.com.br;controller2@gruposervnac.com.br;gerenteti@gruposervnac.com.br;erinalva@gruposervnac.com.br;priscilabandeira@gruposervnac.com.br"
 	//cPara := "rodrigolucas@mconsult.com.br"
 
 	u_MailSERV(cPara, cAssunto, _cHtml)

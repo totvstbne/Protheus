@@ -11,13 +11,13 @@ Gravação da competência do contrato no pedido de vendas
 /*/
 user function M410STTS()
 	Local aArea	:= getArea()
-	Local nvalT	:= 0
+	Local nX	:= 0
 	Local aAGG	:= {}
-	Local nItem	:= 1
+//	Local nItem	:= 1
 	Local nSum	:= 0
 	Local cQuery := ""
-	Local cAlsQry := ""
-	Local lAgil := .F.
+//	Local cAlsQry := ""
+//Local lAgil := .F.
 	Local nOperX := !Inclui .and. !Altera //PARAMIXB
 	If funname() == "CNTA121" //Encerramento da Medição do contrato
 		If CND->CND_YAGRUP == '1' //Agrupa Pedidos
@@ -95,7 +95,7 @@ user function M410STTS()
 	 	RestArea(aArea)
 		Return
 	Endif
-	
+	/*
 	// Garante que não terá rateio pré-definido
 	cUpd := "UPDATE " + RetSqlName("AGG") + " SET D_E_L_E_T_ = '*', R_E_C_D_E_L_= R_E_C_N_O_ "
 	cUpd += "WHERE AGG_FILIAL = '" + xFilial("AGG") + "' AND "
@@ -244,7 +244,7 @@ user function M410STTS()
 		QSC6->(dbSkip())
 	Enddo
 	QSC6->(dbCloseArea())
-
+*/
 	If len(aAGG) > 0
 		If nSum <> 100 //Arrendonda para 100%
 			If nSum > 100

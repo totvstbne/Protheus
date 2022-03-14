@@ -120,7 +120,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA SR0
 				cQuery := " SELECT R0_FILIAL , R0_MAT ,R0_QDIAINF,RA_MAT ,RA_YMATANT, RA_NOME, RA_NASC,RA_TELEFON,RA_CIC,RA_RG,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(R0_DIASPRO) AS R0_DIASPRO,SUM(R0_VALCAL) AS R0_VALCAL "
 				cQuery += " FROM "+RetSqlName("SR0")+" SR0, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  SR0.D_E_L_E_T_ = ''  "
+				cQuery += " WHERE  SR0.D_E_L_E_T_ = ' ' AND SRA.D_E_L_E_T_ = ' '  "
 				cQuery += " AND    R0_FILIAL = '"+ xfilial("SR0",ALLTRIM(TCOMP->RCH_FILIAL)+"0101" )+"'
 				cQuery += " AND    R0_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
 				cQuery += " AND    RA_FILIAL = R0_FILIAL
@@ -397,7 +397,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA RG2
 				cQuery := " SELECT RG2_FILIAL [R0_FILIAL] , RG2_MAT [R0_MAT], RG2_VTDUTE [R0_QDIAINF],RA_MAT,RA_YMATANT,RA_NOME,RA_NASC,RA_TELEFON,RA_CIC,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(RG2_DIAPRO) AS R0_DIASPRO, SUM(RG2_VALCAL) AS R0_VALCAL "
 				cQuery += " FROM "+RetSqlName("RG2")+" RG2, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  RG2.D_E_L_E_T_ = ''  "
+				cQuery += " WHERE  RG2.D_E_L_E_T_ = ' '  AND SRA.D_E_L_E_T_ = ' ' "
 				cQuery += " AND    SUBSTRING(RG2_FILIAL,1,2) = '"+ xfilial("RG2",TCOMP->RCH_FILIAL) +"'
 				cQuery += " AND    RG2_ROTEIR = '"+TCOMP->RCH_ROTEIR+"'
 				cQuery += " AND    RG2_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
@@ -677,7 +677,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA SR0
 				cQuery := " SELECT R0_FILIAL , R0_MAT ,R0_QDIAINF,RA_MAT , RA_YMATANT , RA_NOME, RA_NASC,RA_TELEFON,RA_CIC,RA_RG,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(R0_DIASPRO) AS R0_DIASPRO,SUM(R0_VALCAL) AS R0_VALCAL "
 				cQuery += " FROM "+RetSqlName("SR0")+" SR0, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  SR0.D_E_L_E_T_ = ''  "
+				cQuery += " WHERE  SR0.D_E_L_E_T_ = ' '  AND SRA.D_E_L_E_T_ = ' ' "
 				cQuery += " AND    R0_FILIAL = '"+ xfilial("SR0",ALLTRIM(TCOMP->RCH_FILIAL)+"0101" )+"'
 				cQuery += " AND    R0_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
 				cQuery += " AND    RA_FILIAL = R0_FILIAL
@@ -915,7 +915,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA RG2
 				cQuery := " SELECT RG2_FILIAL [R0_FILIAL] , RG2_MAT [R0_MAT], RG2_VTDUTE [R0_QDIAINF],RA_MAT, RA_YMATANT ,RA_NOME,RA_RG,RA_NASC,RA_TELEFON,RA_CIC,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(RG2_DIAPRO) AS R0_DIASPRO, SUM(RG2_VALCAL) AS R0_VALCAL ""
 				cQuery += " FROM "+RetSqlName("RG2")+" RG2, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  RG2.D_E_L_E_T_ = ''  "
+				cQuery += " WHERE  RG2.D_E_L_E_T_ = ' '  AND SRA.D_E_L_E_T_ = ' ' "
 				cQuery += " AND    SUBSTRING(RG2_FILIAL,1,2) = '"+ xfilial("RG2",TCOMP->RCH_FILIAL) +"'
 				cQuery += " AND    RG2_ROTEIR = '"+TCOMP->RCH_ROTEIR+"'
 				cQuery += " AND    RG2_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'

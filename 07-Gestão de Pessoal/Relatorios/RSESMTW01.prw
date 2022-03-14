@@ -95,7 +95,7 @@ User Function RSESMTW01()
 
 			cAssunto := "Funcionário x Temp Experiência x Atestado- "+substr(_cfilial,1,2)
 			//cPara := "rodrigolucas@mconsult.com.br;vicentejuniormanager@gmail.com;controller3@gruposervnac.com.br;erinalva@gruposervnac.com.br;gestoraoperacional@gruposervnac.com.br"
-			cPara := "controller3@gruposervnac.com.br;erinalva@gruposervnac.com.br;gestoraoperacional@gruposervnac.com.br"
+			cPara := "controller3@gruposervnac.com.br;erinalva@gruposervnac.com.br;gestoraoperacional@gruposervnac.com.br;gerenteti@gruposervnac.com.br"
 			if substr(_cfilial,1,2) $ "03,04,06"
 				cPara += ";gerentefacilities@gruposervnac.com.br"
 			endif

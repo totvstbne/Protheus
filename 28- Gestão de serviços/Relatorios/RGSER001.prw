@@ -241,7 +241,7 @@ Static Function RunProc(cFilIni,cFilFim,cContraIni,cContraFim,cCliIni,cCliFim,cR
 	oExcel:AddPane(2,2)	//Congela primeira linha e primeira coluna
 	nLinha++
 	If lCancelar
-		oExcel:Pos(nLinha,1):SetValue("OPERAÇÃO CANCELADO PELO USUÁRIO!")
+		oExcel:Pos(nLinha,1):SetValue("OPERAÇÃO CANCELADO PELO USUÝRIO!")
 	EndIf
 
 	oExcel:ADDPlan("Sintético")
@@ -291,7 +291,7 @@ Static Function RunProc(cFilIni,cFilFim,cContraIni,cContraFim,cCliIni,cCliFim,cR
 	EndDo
 	nLinha++
 	If lCancelar
-		oExcel:Pos(nLinha,1):SetValue("OPERAÇÃO CANCELADO PELO USUÁRIO!")
+		oExcel:Pos(nLinha,1):SetValue("OPERAÇÃO CANCELADO PELO USUÝRIO!")
 	EndIf
 	oExcel:AddPane(1,3)	//Congela linha e coluna
 
@@ -615,7 +615,7 @@ Static Function cQuery(cFilIni,cFilFim,cContraIni,cContraFim,cCliIni,cCliFim,cRe
 		cQuery		+= " LEFT JOIN "+RetSqlName("AOV")+" AOV ON AOV_FILIAL='"+xFilial("AOV")+"' AND AOV_CODSEG=A1_CODSEG AND AOV.D_E_L_E_T_=' '"
 		cQuery		+= " INNER JOIN "+RetSqlName("SRJ")+" SRJ ON RJ_FILIAL='"+xFilial("SRJ")+"' AND RJ_FUNCAO=TFF_FUNCAO AND SRJ.D_E_L_E_T_=' '"
 		cQuery		+= " INNER JOIN "+RetSqlName("TDW")+" TDW ON TDW_FILIAL='"+xFilial("TDW")+"' AND TDW_COD=TFF_ESCALA AND TDW.D_E_L_E_T_=' '"
-		cQuery		+= " INNER JOIN "+RetSqlName("TV6")+" TV6 ON TV6_FILIAL='"+xFilial("TV6")+"' AND TV6_NUMERO=TFJ_CODTAB AND TV6.D_E_L_E_T_=' '"
+		cQuery		+= " INNER JOIN "+RetSqlName("TV6")+" TV6 ON TV6_FILIAL='"+xFilial("TV6")+"' AND TV6_NUMERO=TFJ_CODTAB AND TV6.D_E_L_E_T_=' ' AND TV6_REVISA = TFJ_TABREV  "
 		cQuery		+= " INNER JOIN "+RetSqlName("CN9")+" CN9 ON CN9_FILIAL='"+xFilial("CN9")+"' AND CN9_NUMERO=TFJ_CONTRT AND CN9_REVISA=TFJ_CONREV AND CN9.D_E_L_E_T_=' '"
 		cQuery		+= " INNER JOIN "+RetSqlName("ADY")+" ADY ON ADY_FILIAL='"+xFilial("ADY")+"' AND ADY_PROPOS=TFJ_PROPOS AND ADY_PREVIS=TFJ_PREVIS AND ADY.D_E_L_E_T_=' ' "
 		cQuery		+= " INNER JOIN "+RetSqlName("AD1")+" AD1 ON AD1_FILIAL='"+xFilial("AD1")+"' AND AD1_NROPOR=ADY_OPORTU AND AD1_REVISA=ADY_REVISA AND AD1.D_E_L_E_T_=' ' "
