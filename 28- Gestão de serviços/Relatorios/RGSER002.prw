@@ -151,7 +151,8 @@ Static Function cQuery(cFilIni,cFilFim,cContraIni,cContraFim,cCliIni,cCliFim,cRe
 	cQuery		+= " AND TFJ_CONREV BETWEEN '"+cRevIni+"' AND '"+cRevFim+"'"
 	cQuery		+= " AND TFF.TFF_ENCE <>'1' "//AND TFF_YEXPO1 <> 'S' "
 	cQuery		+= " AND TFJ_CODTAB<>' '"
-	cQuery		+= " AND TFF.D_E_L_E_T_=' '"
+	cQuery		+= " AND TFF.D_E_L_E_T_=' ' "
+	cQuery		+= " AND TFF_PERFIM >= '"+DTOS(DDATABASE)+"' "
 	cQuery		+= " AND NOT EXISTS (SELECT * FROM "+RETSQLNAME("SZ3")+" Z3 WHERE Z3_FILIAL = TFF_FILIAL AND Z3_CONTRAT = CN9_NUMERO AND Z3_REVISAO = CN9_REVISA AND Z3_LOCAL = TFF_LOCAL AND Z3_CODRH = TFF_COD AND Z3.D_E_L_E_T_ = ' ' ) "
 	cQuery		+= " ORDER BY TFF_FILIAL, CN9_NUMERO, CN9_REVISA, TFF_LOCAL, TFF_COD "
 

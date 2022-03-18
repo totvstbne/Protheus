@@ -21,16 +21,23 @@ User Function LP65013V()
 
 	Local _LRet := .F.
 	Local _caArea := GetArea()
-	
-	DbSelectArea("SE2")
-	DbSetOrder(6)
-	If DbSeek(SUBSTR(SD1->D1_FILIAL,1,2)+SPACE(4)+SD1->(D1_FORNECE+D1_LOJA+D1_SERIE+D1_DOC))
+
+	CQUERY := " SELECT E2_NATUREZ FROM "+RETSQLNAME("SE2")+" E2 WHERE E2_FILIAL = '"+SUBSTR(SD1->D1_FILIAL,1,2)+"' AND E2_FORNECE = '"+SD1->D1_FORNECE+"'  "
+	CQUERY += " AND E2_LOJA = '"+SD1->D1_LOJA+"' AND E2_NUM = '"+SD1->D1_DOC+"' AND E2_PREFIXO = '"+SD1->D1_SERIE+"' AND E2.D_E_L_E_T_ = ' ' "
+
+	TcQuery CQUERY New Alias T01
+	DbSelectArea("T01")
+
+	If !T01->(Eof())
+
 		DbSelectArea("SED")
 		DbSetOrder(1)
-		If DbSeek(XFILIAL("SED")+SE2->E2_NATUREZ)
+		If DbSeek(XFILIAL("SED")+T01->E2_NATUREZ)
 			_LRet := IIF(ALLTRIM(SED->ED_YPROVI)$"N",.F.,.T.)
 		endif
+
 	Endif
+	T01->(DBCLOSEAREA())
 	RestArea(_caArea)
 
 Return(_LRet)
