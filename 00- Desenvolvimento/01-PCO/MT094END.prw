@@ -17,7 +17,7 @@ Private cDocto    := PARAMIXB[1]
 Private cTipoDoc  := PARAMIXB[2]  // (PC, NF, SA, IP, AE)
 Private nOpc      := PARAMIXB[3]  //(1-Aprovar, 2-Estornar, 3-Aprovar pelo Superior, 4-Transferir para Superior, 5-Rejeitar, 6-Bloquear
 Private cFilDoc   := PARAMIXB[4]
-
+lRet:= .F.
 SC7->(dbSeek(xFilial("SC7")+AllTrim(SCR->CR_NUM)))
 	
 _nREC       := SC7->(RECNO())

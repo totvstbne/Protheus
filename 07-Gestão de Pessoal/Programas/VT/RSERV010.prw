@@ -17,7 +17,7 @@ user function RSERV010()
 	Local aOpc      := {"Urbano","Metropolitano"}
 	Local aTipos	:= {"T=Todos","D=Dissídio","N=Normal"}
 	Local cMat      := space(6)
-	Local cMeioTr   := space(2)
+	Local cMeioTr   := space(3)
 	Local cNumPd    := space(10)
 	Local cNumPate  := space(10)
 
@@ -53,6 +53,8 @@ Static Function ProcessBnf(aRetOpc)
 	Local aArea     := GetArea()
 	Local aItems    := {}
 	Local lCancel   := .F.
+	Local cConteu:= superGetMv("SV_VTCOD",,"040101=48;010101=26;020101=41;030101=52;050101=50;060101=51")
+	Private adados:= StrTokArr( alltrim(cConteu), ";" )
 
 	Private nTotal  := 0
 	Private nVlr    := 0
@@ -120,7 +122,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA SR0
 				cQuery := " SELECT R0_FILIAL , R0_MAT ,R0_QDIAINF,RA_MAT ,RA_YMATANT, RA_NOME, RA_NASC,RA_TELEFON,RA_CIC,RA_RG,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(R0_DIASPRO) AS R0_DIASPRO,SUM(R0_VALCAL) AS R0_VALCAL "
 				cQuery += " FROM "+RetSqlName("SR0")+" SR0, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  SR0.D_E_L_E_T_ = ' ' AND SRA.D_E_L_E_T_ = ' '  "
+				cQuery += " WHERE  SR0.D_E_L_E_T_ = ''  "
 				cQuery += " AND    R0_FILIAL = '"+ xfilial("SR0",ALLTRIM(TCOMP->RCH_FILIAL)+"0101" )+"'
 				cQuery += " AND    R0_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
 				cQuery += " AND    RA_FILIAL = R0_FILIAL
@@ -176,6 +178,7 @@ Static Function ProcINI(oProcess)
 					cadastro
 					*/
 					// codcliente
+					/*
 					if TGPE->R0_FILIAL == "010101"
 						cTexto += PADr("30126",5,"")
 						cTexto += " "
@@ -191,7 +194,9 @@ Static Function ProcINI(oProcess)
 					ELSEif TGPE->R0_FILIAL == "050101"
 						cTexto += PADr("94915",5,"")
 						cTexto += " "
-					ENDIF
+					ENDIF*/
+					cTexto += fGetEmpr(TGPE->R0_FILIAL)
+					cTexto += " "
 
 					//matricula
 					if alltrim(TGPE->RA_YMATANT) <> ""
@@ -337,6 +342,7 @@ Static Function ProcINI(oProcess)
 					pedido
 					*/
 
+					/*
 					// codcliente
 					if TGPE->R0_FILIAL == "010101"
 						cTexPd += PADr("30126",5,"")
@@ -354,6 +360,9 @@ Static Function ProcINI(oProcess)
 						cTexPd += PADr("94915",5,"")
 						cTexPd += " "
 					ENDIF
+					*/
+					cTexPd += fGetEmpr(TGPE->R0_FILIAL)
+					cTexPd += " "					
 
 					// data pede
 					cTexPd += PADr(DTOC(DDATABASE),10,"")
@@ -397,7 +406,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA RG2
 				cQuery := " SELECT RG2_FILIAL [R0_FILIAL] , RG2_MAT [R0_MAT], RG2_VTDUTE [R0_QDIAINF],RA_MAT,RA_YMATANT,RA_NOME,RA_NASC,RA_TELEFON,RA_CIC,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(RG2_DIAPRO) AS R0_DIASPRO, SUM(RG2_VALCAL) AS R0_VALCAL "
 				cQuery += " FROM "+RetSqlName("RG2")+" RG2, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  RG2.D_E_L_E_T_ = ' '  AND SRA.D_E_L_E_T_ = ' ' "
+				cQuery += " WHERE  RG2.D_E_L_E_T_ = ''  "
 				cQuery += " AND    SUBSTRING(RG2_FILIAL,1,2) = '"+ xfilial("RG2",TCOMP->RCH_FILIAL) +"'
 				cQuery += " AND    RG2_ROTEIR = '"+TCOMP->RCH_ROTEIR+"'
 				cQuery += " AND    RG2_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
@@ -450,6 +459,7 @@ Static Function ProcINI(oProcess)
 					cTexto := ""
 					cTexPd := ""
 
+					/*
 					// codcliente
 					if TGPE->R0_FILIAL == "010101"
 						cTexto += PADr("30126",5,"")
@@ -467,7 +477,9 @@ Static Function ProcINI(oProcess)
 						cTexto += PADr("94915",5,"")
 						cTexto += " "
 					ENDIF
-
+					*/
+					cTexto += fGetEmpr(TGPE->R0_FILIAL)
+					cTexto += " "					
 					//matricula
 					if alltrim(TGPE->RA_YMATANT) <> ""
 						cTexto += PADL(TGPE->RA_YMATANT,8,"0")
@@ -611,7 +623,7 @@ Static Function ProcINI(oProcess)
 					/*
 					pedido
 					*/
-
+					/*
 					// codcliente
 					if TGPE->R0_FILIAL == "010101"
 						cTexPd += PADr("30126",5,"")
@@ -629,6 +641,9 @@ Static Function ProcINI(oProcess)
 						cTexPd += PADr("94915",5,"")
 						cTexPd += " "
 					ENDIF
+					*/
+					cTexPd += fGetEmpr(TGPE->R0_FILIAL)
+					cTexPd += " "					
 
 					// data pede
 					cTexPd += PADr(DTOC(DDATABASE),10,"")
@@ -677,7 +692,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA SR0
 				cQuery := " SELECT R0_FILIAL , R0_MAT ,R0_QDIAINF,RA_MAT , RA_YMATANT , RA_NOME, RA_NASC,RA_TELEFON,RA_CIC,RA_RG,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(R0_DIASPRO) AS R0_DIASPRO,SUM(R0_VALCAL) AS R0_VALCAL "
 				cQuery += " FROM "+RetSqlName("SR0")+" SR0, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  SR0.D_E_L_E_T_ = ' '  AND SRA.D_E_L_E_T_ = ' ' "
+				cQuery += " WHERE  SR0.D_E_L_E_T_ = ''  "
 				cQuery += " AND    R0_FILIAL = '"+ xfilial("SR0",ALLTRIM(TCOMP->RCH_FILIAL)+"0101" )+"'
 				cQuery += " AND    R0_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
 				cQuery += " AND    RA_FILIAL = R0_FILIAL
@@ -724,7 +739,7 @@ Static Function ProcINI(oProcess)
 					cadastro
 					*/
 					// codcliente
-
+					/*
 					if TGPE->R0_FILIAL == "010101"
 						cTexto += PADr("30126",5,"")
 						cTexto += " "
@@ -741,6 +756,9 @@ Static Function ProcINI(oProcess)
 						cTexto += PADr("94915",5,"")
 						cTexto += " "
 					ENDIF
+					*/
+					cTexto += fGetEmpr(TGPE->R0_FILIAL)
+					cTexto += " "					
 					//matricula
 					//cTexto += PADL(TGPE->RA_MAT,8,"0")
 					if alltrim(TGPE->RA_YMATANT) <> ""
@@ -852,6 +870,7 @@ Static Function ProcINI(oProcess)
 					pedido
 					*/
 
+					/*
 					// codcliente
 					if TGPE->R0_FILIAL == "010101"
 						cTexPd += PADr("30126",5,"")
@@ -869,6 +888,9 @@ Static Function ProcINI(oProcess)
 						cTexPd += PADr("94915",5,"")
 						cTexPd += " "
 					ENDIF
+					*/
+					cTexPd += fGetEmpr(TGPE->R0_FILIAL)
+					cTexPd += " "					
 
 					// data pede
 					cTexPd += PADr(DTOC(DDATABASE),10,"")
@@ -915,7 +937,7 @@ Static Function ProcINI(oProcess)
 				// FAZER SELECT NA RG2
 				cQuery := " SELECT RG2_FILIAL [R0_FILIAL] , RG2_MAT [R0_MAT], RG2_VTDUTE [R0_QDIAINF],RA_MAT, RA_YMATANT ,RA_NOME,RA_RG,RA_NASC,RA_TELEFON,RA_CIC,RA_ORGEMRG,RA_ENDEREC,RA_BAIRRO,RA_CEP,RA_MUNNASC,RA_ESTADO,RA_CODFUNC,RA_CC,RA_MAE,RA_NUMCP,SUM(RG2_DIAPRO) AS R0_DIASPRO, SUM(RG2_VALCAL) AS R0_VALCAL ""
 				cQuery += " FROM "+RetSqlName("RG2")+" RG2, "+RetSqlName("SRA")+" SRA  "
-				cQuery += " WHERE  RG2.D_E_L_E_T_ = ' '  AND SRA.D_E_L_E_T_ = ' ' "
+				cQuery += " WHERE  RG2.D_E_L_E_T_ = ''  "
 				cQuery += " AND    SUBSTRING(RG2_FILIAL,1,2) = '"+ xfilial("RG2",TCOMP->RCH_FILIAL) +"'
 				cQuery += " AND    RG2_ROTEIR = '"+TCOMP->RCH_ROTEIR+"'
 				cQuery += " AND    RG2_MAT BETWEEN '"+ cMat1 +"' and '"+ cMat2 +"'
@@ -963,7 +985,7 @@ Static Function ProcINI(oProcess)
 					*/
 
 					// codcliente
-
+					/*
 					if TGPE->R0_FILIAL == "010101"
 						cTexto += PADr("30126",5,"")
 						cTexto += " "
@@ -980,6 +1002,10 @@ Static Function ProcINI(oProcess)
 						cTexto += PADr("94915",5,"")
 						cTexto += " "
 					ENDIF
+					*/
+					cTexto += fGetEmpr(TGPE->R0_FILIAL)
+					cTexto += " "
+
 					//matricula
 					//cTexto += PADL(TGPE->RA_MAT,8,"0")
 					if alltrim(TGPE->RA_YMATANT) <> ""
@@ -1090,7 +1116,7 @@ Static Function ProcINI(oProcess)
 					/*
 					pedido
 					*/
-
+					/*
 					// codcliente
 					if TGPE->R0_FILIAL == "010101"
 						cTexPd += PADr("30126",5,"")
@@ -1108,6 +1134,9 @@ Static Function ProcINI(oProcess)
 						cTexPd += PADr("94915",5,"")
 						cTexPd += " "
 					ENDIF
+					*/
+					cTexPd += fGetEmpr(TGPE->R0_FILIAL)
+					cTexPd += " "					
 
 					// data pede
 					cTexPd += PADr(DTOC(DDATABASE),10,"")
@@ -1157,3 +1186,15 @@ Static Function ProcINI(oProcess)
 
 
 Return
+
+Static Function fGetEmpr(cChave)
+	Local cRet:= "  "
+	Local cDePara:= ""
+	nPos:= aScan(adados,{|x| substr(x,1,6) == cChave}) 
+	If nPos > 0
+		cDePara:= StrTokArr(adados[nPos],"=")[2]
+	Else
+		cDePara:= "  "
+	Endif
+	cRet := PADR(cDePara,5,"")
+Return cRet

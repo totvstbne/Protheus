@@ -18,6 +18,7 @@ user function RPFA010(nTipo)
 	Local cDescrp	:= ""
 	Local aLegenda	:= {}
 	Local nX
+	Private nTipoS	:= nTipo
 	Private nValsel	:= 0
 	If nTipo == 1 //Aprovação Despesas Fixas
 		cFiltro := "CR_FILIAL= '"+xFilial("SCR")+"' .And. CR_USER =  '"+RetCodUsr()+"' .AND. CR_STATUS = '02' .AND. ((CR_TIPO = 'PC' .AND. CR_YTIPOPC = 'PF')  .OR. CR_TIPO = 'PF'  ) .AND. CR_YDESPFX = 'S' "
@@ -50,15 +51,16 @@ user function RPFA010(nTipo)
 	aadd(aRotina, {"Aprovar","U_fAprovSCR",0,4,0,NIL})
 	aadd(aRotina, {"Rejeitar","U_fRejSCR",0,4,0,NIL})
 	aadd(aRotina, {"Marcar","u_fMarcaTudo",0,4,0,NIL})
+	aadd(aRotina, {"Marcar Todos","u_fMarkTOk",0,4,0,NIL})
 	aadd(aRotina, { "Visualizar Pedido Financeiro","u_fVisuPF()",0,4,0,NIL})
 	oMark := FWMarkBrowse():New()
 	oMark:SetAlias('SCR')
 	For nx := 1 to len(aLegenda)
 		oMark:AddLegend(aLegenda[nx][1], aLegenda[nx][2], aLegenda[nx][3])
 	Next nx
-	oMark:SetSemaphore(.T.)
+	oMark:SetSemaphore(.F.)
 	oMark:SetFieldMark('CR_YOK')
-	oMark:SetAllMark( { || nil } )
+	oMark:SetAllMark( { || u_fMarkTOk() } )
 	oMark:SetAfterMark( { || fSelectSCR() } )
 	oMark:SetDescription(cDescrp)
 	oMark:SetUseFilter(.T.)
@@ -89,22 +91,27 @@ User Function fAprovSCR
 
 	while TQCR->(!Eof())
 		SCR->(dbGoto(TQCR->RECNO))
-		// ZA7->(dbSetOrder(3))
-		// ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
+		ZA7->(dbSetOrder(3))
+		ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
 
 		Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por "+alltrim(cUserName))}, "Aprovando o Pedido Financeiro "+SCR->CR_NUM)
-		
-		Reclock("SCR",.F.)
-		SCR->CR_YLOTE 	:= cLtAp
-		SCR->CR_DATALIB	:= dDataBase
-		MsUnlock()
-
-		ZA7->(dbSetOrder(3))
-		If ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
-			Reclock("ZA7",.F.)
-			ZA7->ZA7_YLOTE := cLtAp
+		If SCR->CR_STATUS <> '02'
+			Reclock("SCR",.F.)
+			SCR->CR_YLOTE 	:= cLtAp
+			SCR->CR_DATALIB	:= dDataBase
 			MsUnlock()
-		EndIf
+
+			ZA7->(dbSetOrder(3))
+			If ZA7->(dbSeek(xFilial("ZA7")+alltrim(SCR->CR_NUM)))
+				Reclock("ZA7",.F.)
+				ZA7->ZA7_YLOTE := cLtAp
+				MsUnlock()
+			EndIf
+		Else
+			Reclock("SCR",.F.)
+				SCR->CR_DATALIB:= ctod("")
+			MsUnlock()	
+		Endif
 		TQCR->(dbSkip())
 	Enddo
 	TQCR->(dbCloseArea())
@@ -114,9 +121,10 @@ User Function fAprovSCR
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
 
-
-
 	msgInfo("Documentos selecionados aprovados")
+	nValsel:= 0
+	oMark:refresh(.T.)
+	oMark:oBrowse:refresh()
 	RestArea(aArea)
 Return
 
@@ -248,4 +256,39 @@ Static Function fSelectSCR
 	oTSay:= TSay():Create(oPanelTop2,{|| cMsg },01,01,,,,,,.T.,,,900,10,,,,,,.T.)
 	oMark:oBrowse:refresh()
 	oDlgAp:refresh()
+Return
+
+
+User Function fMarkTOk
+	nValsel:= 0
+	cQuery:= "SELECT R_E_C_N_O_ RECNO FROM "+RetSqlName("SCR")+" SCR "
+	cQuery+= "WHERE SCR.D_E_L_E_T_ = ' ' AND "
+	cQuery+= "CR_FILIAL = '"+xFilial("SCR")+"' AND "
+	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND  "
+	cQuery+="((CR_TIPO = 'PC' AND CR_YTIPOPC = 'PF') OR (CR_TIPO = 'PF')) "
+	If nTipoS = 1
+		cQuery+=" AND CR_YDESPFX = 'S' "
+	Endif
+	tcQuery cQuery new Alias QTOT
+
+	while QTOT->(!eof())
+		SCR->(dbGoto(QTOT->RECNO))
+		Reclock("SCR",.F.)
+		If SCR->CR_YOK = oMark:Mark()
+			SCR->CR_YOK:= space(2)
+		Else
+			SCR->CR_YOK:= oMark:Mark()
+			nValsel+= SCR->CR_TOTAL
+		Endif
+		MsUnlock()
+		QTOT->(dbSkip())
+	enddo
+	QTOT->(dbCloseArea())
+
+	cMsg:= '<font color=red size="5"><b>TOTAL R$ '+transform(nValsel,"@E 9,999,999.99")+' </b> </font>'
+	oTSay:= TSay():Create(oPanelTop2,{|| cMsg },01,01,,,,,,.T.,,,900,10,,,,,,.T.)
+	oMark:oBrowse:refresh()
+	oMark:Refresh(.T.)
+	oDlgAp:refresh()
+
 Return

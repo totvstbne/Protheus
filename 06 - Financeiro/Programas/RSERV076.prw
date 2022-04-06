@@ -42,6 +42,7 @@ user function RSERV076()
 
 	Local cMenComp  := "" 
 
+
 	//aAdd( aPergs ,{1,"Filial de",	cFilde	,GetSx3Cache("M0_CODFIL","X3_PICTURE") ,'.T.',"SM0" ,'.T.',6,.F.})
 	aAdd( aPergs ,{1,"Filial ",	cFilate	,GetSx3Cache("M0_CODFIL","X3_PICTURE") ,'.T.',"SM0" ,'.T.',6,.F.})
 	aAdd( aPergs ,{1,"Período",	    cPeriod	,GetSx3Cache("RG2_ANOMES","X3_PICTURE") ,'.T.',"" ,'.T.',6,.T.})
@@ -156,6 +157,9 @@ Return .T.
 Static Function ProcINI(oProcess)
 
 	Local cTipPer := ""
+	Local cConteu:= superGetMv("SV_MITU",,"040101=48;010101=26;020101=41;030101=52;050101=50;060101=51")
+	Private adados:= StrTokArr( alltrim(cConteu), ";" )
+
 
 	//1* verificar se o período informado ´é fechado (RG2) ou aberto (SR0)  RCH_PERSEL = '1' 
 	cQuery1 := " SELECT *
@@ -253,6 +257,10 @@ Static Function ProcINI(oProcess)
 					cTexto += PADr("11",2,"")
 					//Versão do arquivo
 					cTexto += PADr("001",3,"")
+				
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+
+					/*
 					//Código da empresa 
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
@@ -264,7 +272,9 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 					
+					ENDIF
+					*/
+
 					//Data da geração
 					cTexto += SUBSTR(DTOS(DDATABASE),7,2) + SUBSTR(DTOS(DDATABASE),5,2) + SUBSTR(DTOS(DDATABASE),1,4)
 					//Hora de geração
@@ -293,7 +303,9 @@ Static Function ProcINI(oProcess)
 					//Tipo de Registro
 					cTexto += PADr("21",2,"")
 					//Código da empresa
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
 
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -304,9 +316,10 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 	
+					ENDIF
+					*/ 	
 					//Código da filial
-					//cTexto += PADL("3333",5,"0")
+
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -316,6 +329,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo pessoa
@@ -505,7 +520,9 @@ Static Function ProcINI(oProcess)
 			//Tipo de Registro
 			cTexto += PADR("29",2,"")
 			//Código da empresa
-			//cTexto += PADL("CODE",5,"0")
+			cTexto += fGetEmpr(TSRA->RA_FILIAL)
+			
+			/*
 			IF TSRA->RA_FILIAL == '040101'
 				cTexto += PADL("48",5,"0")
 			ELSEIF TSRA->RA_FILIAL == '010101'
@@ -517,6 +534,7 @@ Static Function ProcINI(oProcess)
 			ELSEIF TSRA->RA_FILIAL == '050101'
 				cTexto += PADL("50",5,"0")
 			ENDIF 	
+			*/
 			//Código da filial
 			//cTexto += PADL("CODF",5,"0")
 			IF TSRA->RA_FILIAL == '040101'
@@ -528,6 +546,8 @@ Static Function ProcINI(oProcess)
 			ELSEIF TSRA->RA_FILIAL == '030101'
 				cTexto += PADL("1",5,"0")
 			ELSEIF TSRA->RA_FILIAL == '050101'
+				cTexto += PADL("1",5,"0")
+			ELSE
 				cTexto += PADL("1",5,"0")
 			ENDIF 	
 			//Tipo pessoa
@@ -560,7 +580,9 @@ Static Function ProcINI(oProcess)
 			//Tipo de Registro
 			cTexto += PADr("19",2,"")
 			//Código da empresa
-			//cTexto += PADl("0",5,"0")
+			cTexto += fGetEmpr(TSRA->RA_FILIAL)
+			
+			/*
 			IF TSRA->RA_FILIAL == '040101'
 				cTexto += PADL("48",5,"0")
 			ELSEIF TSRA->RA_FILIAL == '010101'
@@ -572,6 +594,7 @@ Static Function ProcINI(oProcess)
 			ELSEIF TSRA->RA_FILIAL == '050101'
 				cTexto += PADL("50",5,"0")
 			ENDIF 					
+			*/
 			//Quantidade registros filial
 			//cTexto += PADl(nRFil,5,"0")
 			IF TSRA->RA_FILIAL == '040101'
@@ -583,6 +606,8 @@ Static Function ProcINI(oProcess)
 			ELSEIF TSRA->RA_FILIAL == '030101'
 				cTexto += PADL("1",5,"0")
 			ELSEIF TSRA->RA_FILIAL == '050101'
+				cTexto += PADL("1",5,"0")
+			ELSE
 				cTexto += PADL("1",5,"0")
 			ENDIF 			
 			//Número da linha
@@ -598,7 +623,6 @@ Static Function ProcINI(oProcess)
 				if TCOMP->RCH_PERSEL == "1" // periodo em aberto
 
 					// FAZER SELECT NA SRA 
-
 					cQuery := " SELECT  *
 					cQuery += " FROM "+RetSqlName("SRC")+" SRC  , "+RetSqlName("SRA")+ " SRA " 
 					cQuery += " INNER JOIN (
@@ -669,7 +693,9 @@ Static Function ProcINI(oProcess)
 							//arquivo Numérico 03 05 03
 							cTexto += PADr("001",3,"")
 							//Código da empresa Numérico 06 10 05
-							//cTexto += PADl("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -680,7 +706,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/ 
 							//Produto Numérico 11 12 02
 							cTexto += PADr("01",2,"")
 							//Data de geração do
@@ -712,7 +739,8 @@ Static Function ProcINI(oProcess)
 							//Header Numérico 01 02 02
 							cTexto += PADr("21",02,"")
 							//Código da Empresa Numérico 03 07 05
-							//cTexto += PADL("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -723,7 +751,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/ 
 							//Código da filial Numérico 08 12 05
 							//cTexto += PADL("FIL",5,"0")
 							IF TSRA->RA_FILIAL == '040101'
@@ -736,6 +765,7 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("1",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("1",5,"0")
+							
 							ENDIF 	
 							//Tipo de pessoa Alfanumérico 13 13 01
 							cTexto += IF(LEN(ALLTRIM(POSICIONE("SM0",1,cEmpAnt+TSRA->RA_FILIAL,"M0_CGC"))) == 14 ,'J','F')
@@ -824,6 +854,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("29",2,"")
 					//Código da Empresa Numérico 03 07 05
 					//cTexto += PADl("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -835,6 +867,7 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
 					ENDIF 
+					*/
 					//Código da filial Numérico 08 12 05
 					//cTexto += PADl("fil",5,"0")
 					IF TSRA->RA_FILIAL == '040101'
@@ -846,6 +879,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo de pessoa Alfanumérico 13 13 01
@@ -887,7 +922,8 @@ Static Function ProcINI(oProcess)
 					//Header Numérico 01 02 02
 					cTexto += PADR("19",2,"")
 					//Código da empresa Numérico 03 07 05
-					//cTexto += PADL("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -899,6 +935,7 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
 					ENDIF 
+					*/
 					//Produto Numérico 08 09 02
 					cTexto += PADR("01",2,"")
 					//Quantidade de filiais Numérico 10 17 08
@@ -1000,8 +1037,10 @@ Static Function ProcINI(oProcess)
 							//Versão do layout do
 							//arquivo Numérico 03 05 03
 							cTexto += PADr("001",3,"")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL) 
 							//Código da empresa Numérico 06 10 05
 							//cTexto += PADl("EMP",5,"0")
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1012,7 +1051,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/
 							//Produto Numérico 11 12 02
 							cTexto += PADr("01",2,"")
 							//Data de geração do
@@ -1045,6 +1085,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("21",02,"")
 							//Código da Empresa Numérico 03 07 05
 							//cTexto += PADL("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1055,7 +1097,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/ 
 							//Código da filial Numérico 08 12 05
 							//cTexto += PADL("FIL",5,"0")
 							IF TSRA->RA_FILIAL == '040101'
@@ -1067,6 +1110,8 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '030101'
 								cTexto += PADL("1",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
+								cTexto += PADL("1",5,"0")
+							ELSE
 								cTexto += PADL("1",5,"0")
 							ENDIF 	
 							//Tipo de pessoa Alfanumérico 13 13 01
@@ -1162,6 +1207,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("29",2,"")
 					//Código da Empresa Numérico 03 07 05
 					//cTexto += PADl("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1172,7 +1219,8 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 	
+					ENDIF
+					*/ 	
 					//Código da filial Numérico 08 12 05
 					//cTexto += PADl("fil",5,"0")
 					IF TSRA->RA_FILIAL == '040101'
@@ -1184,6 +1232,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo de pessoa Alfanumérico 13 13 01
@@ -1226,6 +1276,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("19",2,"")
 					//Código da empresa Numérico 03 07 05
 					//cTexto += PADL("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1237,6 +1289,7 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
 					ENDIF 	
+					*/
 					//Produto Numérico 08 09 02
 					cTexto += PADR("01",2,"")
 					//Quantidade de filiais Numérico 10 17 08
@@ -1342,6 +1395,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("001",3,"")
 							//Código da empresa Numérico 06 10 05
 							//cTexto += PADl("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1352,7 +1407,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/ 
 							//Produto Numérico 11 12 02
 							cTexto += PADr("01",2,"")
 							//Data de geração do
@@ -1385,6 +1441,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("21",02,"")
 							//Código da Empresa Numérico 03 07 05
 							//cTexto += PADL("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1395,7 +1453,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/ 
 							//Código da filial Numérico 08 12 05
 							//cTexto += PADL("FIL",5,"0")
 							IF TSRA->RA_FILIAL == '040101'
@@ -1407,6 +1466,8 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '030101'
 								cTexto += PADL("1",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
+								cTexto += PADL("1",5,"0")
+							ELSE
 								cTexto += PADL("1",5,"0")
 							ENDIF 	
 							//Tipo de pessoa Alfanumérico 13 13 01
@@ -1496,6 +1557,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("29",2,"")
 					//Código da Empresa Numérico 03 07 05
 					//cTexto += PADl("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1506,7 +1569,8 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 
+					ENDIF
+					*/ 
 					//Código da filial Numérico 08 12 05
 					//cTexto += PADl("fil",5,"0")
 					IF TSRA->RA_FILIAL == '040101'
@@ -1518,6 +1582,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo de pessoa Alfanumérico 13 13 01
@@ -1560,7 +1626,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("19",2,"")
 					//Código da empresa Numérico 03 07 05
 					//cTexto += PADL("EMP",5,"0")
-					IF TSRA->RA_FILIAL == '040101'
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
 						cTexto += PADL("26",5,"0")
@@ -1570,7 +1637,7 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 
+					ENDIF*/ 
 					//Produto Numérico 08 09 02
 					cTexto += PADR("01",2,"")
 					//Quantidade de filiais Numérico 10 17 08
@@ -1674,6 +1741,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("001",3,"")
 							//Código da empresa Numérico 06 10 05
 							//cTexto += PADl("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1684,7 +1753,8 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF
+							*/ 
 							//Produto Numérico 11 12 02
 							cTexto += PADr("01",2,"")
 							//Data de geração do
@@ -1717,7 +1787,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("21",02,"")
 							//Código da Empresa Numérico 03 07 05
 							//cTexto += PADL("EMP",5,"0")
-							IF TSRA->RA_FILIAL == '040101'
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
 								cTexto += PADL("26",5,"0")
@@ -1727,7 +1798,7 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF*/ 
 							//Código da filial Numérico 08 12 05
 							//cTexto += PADL("FIL",5,"0")
 							IF TSRA->RA_FILIAL == '040101'
@@ -1739,6 +1810,8 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '030101'
 								cTexto += PADL("1",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
+								cTexto += PADL("1",5,"0")
+							ELSE
 								cTexto += PADL("1",5,"0")
 							ENDIF 	
 							//Tipo de pessoa Alfanumérico 13 13 01
@@ -1834,6 +1907,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("29",2,"")
 					//Código da Empresa Numérico 03 07 05
 					//cTexto += PADl("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1844,7 +1919,7 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 	
+					ENDIF */	
 					//Código da filial Numérico 08 12 05
 					//cTexto += PADl("fil",5,"0")
 					IF TSRA->RA_FILIAL == '040101'
@@ -1856,6 +1931,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo de pessoa Alfanumérico 13 13 01
@@ -1898,6 +1975,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("19",2,"")
 					//Código da empresa Numérico 03 07 05
 					//cTexto += PADL("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -1908,7 +1987,7 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 	
+					ENDIF*/ 	
 					//Produto Numérico 08 09 02
 					cTexto += PADR("01",2,"")
 					//Quantidade de filiais Numérico 10 17 08
@@ -2013,6 +2092,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("001",3,"")
 							//Código da empresa Numérico 06 10 05
 							//cTexto += PADl("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2023,7 +2104,7 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF */
 							//Produto Numérico 11 12 02
 							cTexto += PADr("01",2,"")
 							//Data de geração do
@@ -2056,6 +2137,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("21",02,"")
 							//Código da Empresa Numérico 03 07 05
 							//cTexto += PADL("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2066,7 +2149,7 @@ Static Function ProcINI(oProcess)
 								cTexto += PADL("52",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
-							ENDIF 
+							ENDIF*/ 
 							//Código da filial Numérico 08 12 05
 							//cTexto += PADL("FIL",5,"0")
 							IF TSRA->RA_FILIAL == '040101'
@@ -2078,6 +2161,8 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '030101'
 								cTexto += PADL("1",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
+								cTexto += PADL("1",5,"0")
+							ELSE	
 								cTexto += PADL("1",5,"0")
 							ENDIF 	
 							//Tipo de pessoa Alfanumérico 13 13 01
@@ -2167,6 +2252,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("29",2,"")
 					//Código da Empresa Numérico 03 07 05
 					//cTexto += PADl("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2177,7 +2264,8 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 
+					ENDIF
+					*/ 
 					//Código da filial Numérico 08 12 05
 					//cTexto += PADl("fil",5,"0")
 					IF TSRA->RA_FILIAL == '040101'
@@ -2189,6 +2277,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo de pessoa Alfanumérico 13 13 01
@@ -2231,6 +2321,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("19",2,"")
 					//Código da empresa Numérico 03 07 05
 					//cTexto += PADL("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2241,7 +2333,7 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 
+					ENDIF*/ 
 					//Produto Numérico 08 09 02
 					cTexto += PADR("01",2,"")
 					//Quantidade de filiais Numérico 10 17 08
@@ -2345,6 +2437,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("001",3,"")
 							//Código da empresa Numérico 06 10 05
 							//cTexto += PADl("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2356,6 +2450,7 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
 							ENDIF 
+							*/
 							//Produto Numérico 11 12 02
 							cTexto += PADr("01",2,"")
 							//Data de geração do
@@ -2388,6 +2483,8 @@ Static Function ProcINI(oProcess)
 							cTexto += PADr("21",02,"")
 							//Código da Empresa Numérico 03 07 05
 							//cTexto += PADL("EMP",5,"0")
+							cTexto += fGetEmpr(TSRA->RA_FILIAL)
+							/*
 							IF TSRA->RA_FILIAL == '040101'
 								cTexto += PADL("48",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2399,6 +2496,7 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '050101'
 								cTexto += PADL("50",5,"0")
 							ENDIF 
+							*/
 							//Código da filial Numérico 08 12 05
 							//cTexto += PADL("FIL",5,"0")
 							IF TSRA->RA_FILIAL == '040101'
@@ -2410,6 +2508,8 @@ Static Function ProcINI(oProcess)
 							ELSEIF TSRA->RA_FILIAL == '030101'
 								cTexto += PADL("1",5,"0")
 							ELSEIF TSRA->RA_FILIAL == '050101'
+								cTexto += PADL("1",5,"0")
+							ELSE	
 								cTexto += PADL("1",5,"0")
 							ENDIF 	
 							//Tipo de pessoa Alfanumérico 13 13 01
@@ -2505,7 +2605,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("29",2,"")
 					//Código da Empresa Numérico 03 07 05
 					//cTexto += PADl("EMP",5,"0")
-					IF TSRA->RA_FILIAL == '040101'
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
 						cTexto += PADL("26",5,"0")
@@ -2515,7 +2616,7 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 	
+					ENDIF*/ 	
 					//Código da filial Numérico 08 12 05
 					//cTexto += PADl("fil",5,"0")
 					IF TSRA->RA_FILIAL == '040101'
@@ -2527,6 +2628,8 @@ Static Function ProcINI(oProcess)
 					ELSEIF TSRA->RA_FILIAL == '030101'
 						cTexto += PADL("1",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
+						cTexto += PADL("1",5,"0")
+					ELSE	
 						cTexto += PADL("1",5,"0")
 					ENDIF 	
 					//Tipo de pessoa Alfanumérico 13 13 01
@@ -2569,6 +2672,8 @@ Static Function ProcINI(oProcess)
 					cTexto += PADR("19",2,"")
 					//Código da empresa Numérico 03 07 05
 					//cTexto += PADL("EMP",5,"0")
+					cTexto += fGetEmpr(TSRA->RA_FILIAL)
+					/*
 					IF TSRA->RA_FILIAL == '040101'
 						cTexto += PADL("48",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2579,7 +2684,7 @@ Static Function ProcINI(oProcess)
 						cTexto += PADL("52",5,"0")
 					ELSEIF TSRA->RA_FILIAL == '050101'
 						cTexto += PADL("50",5,"0")
-					ENDIF 	
+					ENDIF 	*/
 					//Produto Numérico 08 09 02
 					cTexto += PADR("01",2,"")
 					//Quantidade de filiais Numérico 10 17 08
@@ -2693,6 +2798,8 @@ Static Function ProcINI(oProcess)
 						cTexto += PADr("001",3,"")
 						//Código da empresa Numérico 06 10 05
 						//cTexto += PADl("EMP",5,"0")
+						cTexto += fGetEmpr(TSRA->RA_FILIAL)
+						/*
 						IF TSRA->RA_FILIAL == '040101'
 							cTexto += PADL("48",5,"0")
 						ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2704,6 +2811,7 @@ Static Function ProcINI(oProcess)
 						ELSEIF TSRA->RA_FILIAL == '050101'
 							cTexto += PADL("50",5,"0")
 						ENDIF 
+						*/
 						//Produto Numérico 11 12 02
 						cTexto += PADr("01",2,"")
 						//Data de geração do
@@ -2736,6 +2844,8 @@ Static Function ProcINI(oProcess)
 						cTexto += PADr("21",02,"")
 						//Código da Empresa Numérico 03 07 05
 						//cTexto += PADL("EMP",5,"0")
+						cTexto += fGetEmpr(TSRA->RA_FILIAL)
+						/*
 						IF TSRA->RA_FILIAL == '040101'
 							cTexto += PADL("48",5,"0")
 						ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2747,6 +2857,7 @@ Static Function ProcINI(oProcess)
 						ELSEIF TSRA->RA_FILIAL == '050101'
 							cTexto += PADL("50",5,"0")
 						ENDIF 	
+						*/
 						//Código da filial Numérico 08 12 05
 						//cTexto += PADL("FIL",5,"0")
 						IF TSRA->RA_FILIAL == '040101'
@@ -2758,6 +2869,8 @@ Static Function ProcINI(oProcess)
 						ELSEIF TSRA->RA_FILIAL == '030101'
 							cTexto += PADL("1",5,"0")
 						ELSEIF TSRA->RA_FILIAL == '050101'
+							cTexto += PADL("1",5,"0")
+						ELSE
 							cTexto += PADL("1",5,"0")
 						ENDIF 	
 						//Tipo de pessoa Alfanumérico 13 13 01
@@ -2852,6 +2965,8 @@ Static Function ProcINI(oProcess)
 				cTexto += PADR("29",2,"")
 				//Código da Empresa Numérico 03 07 05
 				//cTexto += PADl("EMP",5,"0")
+				cTexto += fGetEmpr(TSRA->RA_FILIAL)
+				/*
 				IF TSRA->RA_FILIAL == '040101'
 					cTexto += PADL("48",5,"0")
 				ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2863,6 +2978,7 @@ Static Function ProcINI(oProcess)
 				ELSEIF TSRA->RA_FILIAL == '050101'
 					cTexto += PADL("50",5,"0")
 				ENDIF 	
+				*/
 				//Código da filial Numérico 08 12 05
 				//cTexto += PADl("fil",5,"0")
 				IF TSRA->RA_FILIAL == '040101'
@@ -2874,6 +2990,8 @@ Static Function ProcINI(oProcess)
 				ELSEIF TSRA->RA_FILIAL == '030101'
 					cTexto += PADL("1",5,"0")
 				ELSEIF TSRA->RA_FILIAL == '050101'
+					cTexto += PADL("1",5,"0")
+				ELSE
 					cTexto += PADL("1",5,"0")
 				ENDIF 	
 				//Tipo de pessoa Alfanumérico 13 13 01
@@ -2917,6 +3035,8 @@ Static Function ProcINI(oProcess)
 				cTexto += PADR("19",2,"")
 				//Código da empresa Numérico 03 07 05
 				//cTexto += PADL("EMP",5,"0")
+				cTexto += fGetEmpr(TSRA->RA_FILIAL)
+				/*
 				IF TSRA->RA_FILIAL == '040101'
 					cTexto += PADL("48",5,"0")
 				ELSEIF TSRA->RA_FILIAL == '010101'
@@ -2928,6 +3048,7 @@ Static Function ProcINI(oProcess)
 				ELSEIF TSRA->RA_FILIAL == '050101'
 					cTexto += PADL("50",5,"0")
 				ENDIF  	
+				*/
 				//Produto Numérico 08 09 02
 				cTexto += PADR("01",2,"")
 				//Quantidade de filiais Numérico 10 17 08
@@ -3130,3 +3251,16 @@ Static Function FMULSRAS(cTitulo,lTipoRet)
 
 	dbSelectArea(cAlias) // Retorna Alias	
 Return( IF( lTipoRet , .T. , MvParDef ) )
+
+
+Static Function fGetEmpr(cChave)
+	Local cRet:= "  "
+	Local cDePara:= ""
+	nPos:= aScan(adados,{|x| substr(x,1,6) == cChave}) 
+	If nPos > 0
+		cDePara:= StrTokArr(adados[nPos],"=")[2]
+	Else
+		cDePara:= "  "
+	Endif
+	cRet := PADL(cDePara,5,"0")
+Return cRet

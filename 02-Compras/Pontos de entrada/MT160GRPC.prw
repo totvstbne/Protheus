@@ -12,8 +12,6 @@
 #include "fileio.ch"
 User Function MT160GRPC
 	Local aArea := GetArea()
-	
-	SC7->C7_YPCPF   := nCombPCPF
-
+	SC7->C7_YPCPF   := "PC"
 	RestArea(aArea)
 Return NIL

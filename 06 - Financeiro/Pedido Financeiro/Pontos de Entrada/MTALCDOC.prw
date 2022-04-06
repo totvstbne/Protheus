@@ -36,6 +36,21 @@ User Function MTALCDOC()
 			QSCR->(dbCloseArea())
 			// Chama aprovação do pedido financeiro
 			U_fAprovPF()
+			If alltrim(SE2->E2_NUM+SE2->E2_PARCELA) <> alltrim(aDocto[1])
+				cQuery :="SELECT R_E_C_N_O_ RECNO FROM "+RetSqlName("SCR")+ " SCR (NOLOCK) "
+				cQuery +="WHERE D_E_L_E_T_ = ' ' AND "
+				cQuery +="CR_FILIAL = '"+xFilial("SCR")+"' AND  "
+				cQuery +="CR_NUM= '"+cDocto+"' AND  "
+				cQuery +="CR_STATUS= '02' AND CR_TIPO='PF'" //Pendente de aprovação
+				TcQuery cQuery new Alias TQE2
+				If TQE2->(!eof())
+					SCR->(dbGoto(TQE2->RECNO))
+					Reclock("SCR",.F.)
+						SCR->CR_DATALIB := cTod("")
+					MsUnlock()
+				Endif
+				TQE2->(dbCloseArea())
+			Endif
 		Else
 			QSCR->(dbCloseArea())
 		Endif

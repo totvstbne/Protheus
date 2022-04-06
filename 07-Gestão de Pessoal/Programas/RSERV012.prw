@@ -22,8 +22,7 @@ user function RSERV012()
 	Private _lafasa := .f.
 	//	aHorario:= At580HorTur( "001", "01" )
 	//	alert(varinfo("aHorario",aHorario,,.F.))
-
-	AjustaSX1(cPerg)
+	AjustaSX1(cPerg)	
 	TNewProcess():New("RSERV012","Lançamento", {|oSelf| ProcessBnf(oSelf)}, "Lançamentos Vale Transporte/Vale Alimentação", cPerg, NIL, NIL, NIL, NIL, .T., .F.)
 return
 
@@ -54,8 +53,8 @@ Static Function ProcessBnf(oProcess)
 	Private nHdl    := 0
 	Private nLin    := 0
 	Private lErrorImp := .F.
-	Private dPerDe	:= 	MonthSub(stod(alltrim(mv_par01)+"21"), 2)
-	Private dPerate	:=  MonthSub(stod(alltrim(mv_par01)+"20"), 1)
+	Private dPerDe	:= 	""
+	Private dPerate	:=  ""
 	Private nQtAgen := 0
 	Private nQtFtl  := 0
 	Private nQtFer  := 0
@@ -63,8 +62,9 @@ Static Function ProcessBnf(oProcess)
 	Private adiasval := {}
 	Private adiasvtr := {}
 	Private _csind := ""
-
 	Private nQtdAuse := 0
+	dPerDe	:= 	MonthSub(stod(alltrim(mv_par01)+cvaltochar(superGetMv("SV_DTINVT",,1))), 2)
+	dPerate	:=  lastDay(dPerDe)//MonthSub(stod(alltrim(mv_par01)+cvaltochar(superGetMv("SV_DTFMVT",,31))), 2)
 
 	cAliasTRB := GetNextAlias()
 	oTmpTbl	:= FWTemporaryTable():New(cAliasTRB)
@@ -114,6 +114,7 @@ Return .T.
 Static Function ProcINI(oProcess,cAliasTRB,oTmpTbl)
 
 	Local cNomTab := oTmpTbl:GetRealName()
+	Local nAux := 0
 	//1*
 	// PERCORRE SRA RETIRANDO DELETADOS E N DEMITIDOS
 	cQuery1 := " SELECT *
@@ -178,10 +179,12 @@ Static Function ProcINI(oProcess,cAliasTRB,oTmpTbl)
 		cQuery1 += " FROM "+RetSqlName("ABB")+"  ABB
 		cQuery1 += " INNER JOIN "+RetSqlName("SM7")+" SM7 ON M7_FILIAL = ABB_FILIAL AND M7_TPVALE='2' AND M7_MAT = '"+alltrim(TFUNC->RA_MAT)+"'
 		cQuery1 += " WHERE ABB.D_E_L_E_T_=' ' AND SM7.D_E_L_E_T_ = ' ' "
-		cQuery1 += " AND SUBSTRING(ABB_DTINI,1,6) = '"+alltrim(MV_PAR01)+"' "
+		///cQuery1 += " AND SUBSTRING(ABB_DTINI,1,6) = '"+alltrim(MV_PAR01)+"' "
+		cQuery1 += " AND ABB_DTINI>= '"+dtos(dPerDe)+"' "
+		cQuery1 += " AND SUBSTRING(ABB_DTINI,1,6) <= '"+alltrim(MV_PAR01)+"' "
 		cQuery1 += " AND ABB_CODTEC  = '"+ alltrim(TFUNC->RA_FILIAL)+alltrim(TFUNC->RA_MAT) +"'
 		cQuery1 += " AND ABB_LOCAL BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'
-		cQuery1 += " GROUP BY ABB_FILIAL  , ABB_CODTEC, ABB_DTINI , ABB_LOCAL  , ABB_IDCFAL , M7_CODIGO) ABB2
+		cQuery1 += " GROUP BY ABB_FILIAL  , ABB_CODTEC, ABB_DTINI , ABB_LOCAL  , ABB_IDCFAL , M7_CODIGO) ArBB2
 		cQuery1 += " GROUP BY ABB_FILIAL  , ABB_CODTEC, ABB_LOCAL , ABB_IDCFAL , M7_CODIGO
 
 		If select("TABB") > 0
@@ -299,6 +302,12 @@ Static Function ProcINI(oProcess,cAliasTRB,oTmpTbl)
 						(cAliasTRB)->QTDAVISO 	:= aValeAli[nAux][8]
 						(cAliasTRB)->QTDAUSE 	:= aValeAli[nAux][9]
 						MsUnlock()
+					Endif
+
+					If (cAliasTRB)->QTVA = 0
+						Reclock(cAliasTRB,.F.)
+							(cAliasTRB)->(dbDelete())
+						msunlock()
 					Endif
 				Endif
 				TINS->(dbCloseArea())
@@ -425,19 +434,36 @@ Static Function ProcINI(oProcess,cAliasTRB,oTmpTbl)
 					If empty(TINS->VT) //Edita o registro
 						dbSelectArea(cAliasTRB)
 						(cAliasTRB)->(dbSetOrder(1))
-						(cAliasTRB)->(dbSeek(TFUNC->RA_MAT))
-						Reclock(cAliasTRB,.F.)
-						(cAliasTRB)->LOCAL		:= Posicione("ABS",1,xFilial("ABS")+aValeTran[nAux][5],"ABS_DESCRI")
-						(cAliasTRB)->DESCVT 	:= aValeTran[nAux][2]
-						(cAliasTRB)->QTVT 		:= aValeTran[nAux][3]
-						(cAliasTRB)->QTVTDIA	:= aValeTran[nAux][4]
-						(cAliasTRB)->VT 		:= aValeTran[nAux][6]
-						(cAliasTRB)->QTAGEN 	:= aValeTran[nAux][7]
-						(cAliasTRB)->QTFALT 	:= aValeTran[nAux][8]
-						(cAliasTRB)->QTFERIAS 	:= aValeTran[nAux][9]
-						(cAliasTRB)->QTDAVISO 	:= aValeTran[nAux][10]
-						(cAliasTRB)->QTDAUSE 	:= aValeTran[nAux][11]
-						MsUnlock()
+						If (cAliasTRB)->(dbSeek(TFUNC->RA_MAT))
+							Reclock(cAliasTRB,.F.)
+							(cAliasTRB)->LOCAL		:= Posicione("ABS",1,xFilial("ABS")+aValeTran[nAux][5],"ABS_DESCRI")
+							(cAliasTRB)->DESCVT 	:= aValeTran[nAux][2]
+							(cAliasTRB)->QTVT 		:= aValeTran[nAux][3]
+							(cAliasTRB)->QTVTDIA	:= aValeTran[nAux][4]
+							(cAliasTRB)->VT 		:= aValeTran[nAux][6]
+							(cAliasTRB)->QTAGEN 	:= aValeTran[nAux][7]
+							(cAliasTRB)->QTFALT 	:= aValeTran[nAux][8]
+							(cAliasTRB)->QTFERIAS 	:= aValeTran[nAux][9]
+							(cAliasTRB)->QTDAVISO 	:= aValeTran[nAux][10]
+							(cAliasTRB)->QTDAUSE 	:= aValeTran[nAux][11]
+							MsUnlock()
+						Else
+							Reclock(cAliasTRB,.t.)
+							(cAliasTRB)->LOCAL		:= Posicione("ABS",1,xFilial("ABS")+aValeTran[nAux][5],"ABS_DESCRI")
+							(cAliasTRB)->FILIAL		:= TFUNC->RA_FILIAL
+							(cAliasTRB)->MATRICULA	:= TFUNC->RA_MAT
+							(cAliasTRB)->NOMEFUN	:= TFUNC->RA_NOME
+							(cAliasTRB)->DESCVT 	:= aValeTran[nAux][2]
+							(cAliasTRB)->QTVT 		:= aValeTran[nAux][3]
+							(cAliasTRB)->QTVTDIA 	:= aValeTran[nAux][4]
+							(cAliasTRB)->VT 		:= aValeTran[nAux][6]
+							(cAliasTRB)->QTAGEN 	:= aValeTran[nAux][7]
+							(cAliasTRB)->QTFALT 	:= aValeTran[nAux][8]
+							(cAliasTRB)->QTFERIAS 	:= aValeTran[nAux][9]
+							(cAliasTRB)->QTDAVISO 	:= aValeTran[nAux][10]
+							(cAliasTRB)->QTDAUSE 	:= aValeTran[nAux][11]
+							MsUnlock()
+						Endif	
 					Else //Insere novo registro do vale alimentação
 						Reclock(cAliasTRB,.t.)
 						(cAliasTRB)->LOCAL		:= Posicione("ABS",1,xFilial("ABS")+aValeTran[nAux][5],"ABS_DESCRI")
@@ -454,6 +480,11 @@ Static Function ProcINI(oProcess,cAliasTRB,oTmpTbl)
 						(cAliasTRB)->QTDAVISO 	:= aValeTran[nAux][10]
 						(cAliasTRB)->QTDAUSE 	:= aValeTran[nAux][11]
 						MsUnlock()
+					Endif
+					If (cAliasTRB)->QTVT = 0
+						Reclock(cAliasTRB,.F.)
+							(cAliasTRB)->(dbDelete())
+						msunlock()
 					Endif
 				Endif
 				TINS->(dbCloseArea())
@@ -608,6 +639,7 @@ Static Function PrintReport(oReport)
 		cQuery	+=" FROM " + cNomTab + " "
 		cQuery	+=" WHERE MATRICULA = '"+TREL->MATRICULA+"' "
 		cQuery	+=" AND VA <>' ' "
+		cQuery	+=" AND QTVA > 0  "
 		cQuery	+=" GROUP BY NOMEFUN,FILIAL,MATRICULA,LOCAL,VA,DESCVA,QTVA,QTAGEN,QTFALT,QTFERIAS,QTDAVISO,QTDAUSE "
 		cQuery	+=" ORDER BY FILIAL,NOMEFUN,MATRICULA "
 		tcQuery cQuery new Alias TALIM
@@ -650,6 +682,7 @@ Static Function PrintReport(oReport)
 		cQuery	+=" FROM " + cNomTab + " "
 		cQuery	+=" WHERE MATRICULA = '"+TREL->MATRICULA+"' "
 		cQuery	+=" AND VT <>' '  "
+		cQuery	+=" AND QTVT > 0  "
 		cQuery	+=" GROUP BY NOMEFUN,FILIAL,MATRICULA,LOCAL,VT,DESCVT,QTVT,QTVTDIA,QTAGEN,QTFALT,QTFERIAS,QTDAVISO,QTDAUSE "
 		cQuery	+=" ORDER BY FILIAL,NOMEFUN,MATRICULA "
 		tcQuery cQuery new Alias TVT
@@ -817,7 +850,7 @@ Static Function fGetDias(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 	cQuery+= "TFF_ESCALA <> ' ' AND "
 	cQuery+= "TFF_FILIAL= '"+cFilQ+"' AND  "
 	cQuery+= "ABB_CODTEC  = '"+cCodTecQ+"' AND "
-	///cQuery+= "ABB_LOCAL = '"+cLocalQ+"' AND  "
+	cQuery+= "ABB_LOCAL = '"+cLocalQ+"' AND  " ///
 	cQuery+= "TFF_CONTRT = '"+cContraQ+"' AND "
 	cQuery+= "SUBSTRING(ABB_DTINI,1,6) = '"+alltrim(MV_PAR01)+"' AND "
 	cQuery+= "ABB_LOCAL BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'  "
@@ -841,7 +874,7 @@ Static Function fGetDias(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 	cQuery+= "TFF_ESCALA = ' ' AND "
 	cQuery+= "TFF_FILIAL= '"+cFilQ+"' AND  "
 	cQuery+= "ABB_CODTEC  = '"+cCodTecQ+"' AND "
-	///cQuery+= "ABB_LOCAL = '"+cLocalQ+"' AND  "
+	cQuery+= "ABB_LOCAL = '"+cLocalQ+"' AND  " ///
 	cQuery+= "TFF_CONTRT = '"+cContraQ+"' AND "
 	cQuery+= "SUBSTRING(ABB_DTINI,1,6) = '"+alltrim(MV_PAR01)+"' AND "
 	cQuery+= "ABB_LOCAL BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'  "
@@ -1106,29 +1139,28 @@ Static Function fGetFolh(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 	QRSRH->(dbCloseArea())
 */
 	//Diminuir faltas - GS
-	cQuery:= " SELECT RA_FILIAL,RA_MAT,RA_NOMECMP,ABB_HRINI,ABB_HRFIM,ABR_MOTIVO,ABB_DTINI,TFF_TURNO,TDX_TURNO TURNO "
+	cQuery:= " SELECT RA_FILIAL,RA_MAT,RA_NOMECMP,ABB_HRINI,ABB_HRFIM, ABR_MOTIVO,ABB_DTINI,TFF_TURNO,TDX_TURNO TURNO,ABN_YGRFAL "
 	cQuery+= " FROM "+RetSqlName("ABB")+" ABB "
 	cQuery+= " INNER JOIN "+RetSqlName("AA1")+" AA1 ON  ABB_CODTEC=AA1_CODTEC AND AA1_FILIAL=ABB_FILIAL "
 	cQuery+= " INNER JOIN "+RetSqlName("SRA")+" SRA ON RA_FILIAL=ABB_FILIAL  AND AA1_CDFUNC=RA_MAT AND AA1_FILIAL=RA_FILIAL "
-	cQuery+= " INNER JOIN "+RetSqlName("ABR")+" ABR ON ABB_FILIAL = ABR_FILIAL AND ABR_AGENDA=ABB_CODIGO "
-	cQuery+= " INNER JOIN "+RetSqlName("ABN")+" ABN ON ABN_CODIGO = ABR_MOTIVO "
+	cQuery+= " LEFT JOIN "+RetSqlName("ABR")+" ABR ON ABB_FILIAL = ABR_FILIAL AND ABR_AGENDA=ABB_CODIGO AND ABR.D_E_L_E_T_=' ' "
+	cQuery+= " LEFT JOIN "+RetSqlName("ABN")+" ABN ON ABN_CODIGO = ABR_MOTIVO  AND ABN.D_E_L_E_T_=' ' AND ABN_YGRFAL = 'S' "
 	cQuery+= " INNER JOIN "+RetSqlName("ABQ")+" ABQ ON ABQ_CONTRT = SUBSTRING(ABB_IDCFAL,1,15) AND ABQ_ITEM = SUBSTRING(ABB_IDCFAL,16,6) AND ABQ_FILIAL = SUBSTRING(ABB_FILIAL,1,4) "
-	cQuery+= " INNER JOIN "+RetSqlName("TFF")+" TFF ON ABB_FILIAL = TFF_FILIAL AND SUBSTRING(ABB_IDCFAL,1,15) = TFF_CONTRT AND ABQ_CODTFF = TFF_COD "
+	cQuery+= " INNER JOIN "+RetSqlName("TFF")+" TFF ON ABB_FILIAL = TFF_FILIAL AND SUBSTRING(ABB_IDCFAL,1,15) = TFF_CONTRT AND ABQ_CODTFF = TFF_COD " 
 	cQuery+= " INNER JOIN "+RetSqlName("TDX")+" TDX ON TDX_FILIAL = TFF_FILIAL AND TDX_CODTDW = TFF_ESCALA "
 	cQuery+= " WHERE ABB.D_E_L_E_T_=' ' AND AA1.D_E_L_E_T_=' ' AND "
-	cQuery+= " SRA.D_E_L_E_T_=' ' AND ABR.D_E_L_E_T_=' ' AND "
-	cQuery+= " ABN.D_E_L_E_T_=' ' AND ABQ.D_E_L_E_T_=' ' AND "
+	cQuery+= " SRA.D_E_L_E_T_=' '  AND " 
+	cQuery+= " ABQ.D_E_L_E_T_=' ' AND "
 	cQuery+= " TFF.D_E_L_E_T_=' ' AND TDX.D_E_L_E_T_=' ' AND "
-	cQuery+= " ABN_YGRFAL = 'S' AND " //Campo criado para considerar falta
 	//cQuery+= " ABN_CODIGO IN ("+alltrim(supergetMv("SV_ABNCOD",,"'000001','000013'"))+") AND " //Ocorrencias que representam falta
 	cQuery+= " TFF_FILIAL= '"+cFilQ+"' AND  "
 	cQuery+= " ABB_CODTEC  = '"+cCodTecQ+"' AND "
 	cQuery+= " TFF_CONTRT = '"+cContraQ+"' AND "
 	cQuery+= " ABB_DTINI BETWEEN '"+dtos(dPerDe)+"' AND '"+dtos(dPerAte)+"' AND "
-	//cQuery+= " RH_DATAINI >= '"+dtos(dPerDe)+"' AND RH_DATAFIM <=  '"+dtos(dPerAte)+"' AND "
 	cQuery+= " ABB_LOCAL BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'  "
-	cQuery+= " GROUP BY RA_FILIAL,RA_MAT,RA_NOMECMP,ABB_HRINI,ABB_HRFIM,ABR_MOTIVO,ABB_DTINI,TFF_TURNO,TDX_TURNO "
+	cQuery+= " GROUP BY RA_FILIAL,RA_MAT,RA_NOMECMP,ABB_HRINI,ABB_HRFIM,ABR_MOTIVO,ABB_DTINI,TFF_TURNO,TDX_TURNO,ABN_YGRFAL "
 	tcQuery cQuery new Alias QRSRH
+	conout("## "+cQuery)
 	//ConOut('iniciando faltas gs ')
 	while QRSRH->(!Eof())
 		/*
@@ -1149,7 +1181,7 @@ Static Function fGetFolh(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 		Endif
 		QRRCG->(dbCloseArea())
 		*/
-		If lCalendRCG
+		If lCalendRCG .and. QRSRH->ABN_YGRFAL = 'S'
 			//Busca na SPJ o dia da semana ativo
 			cDTroc:= cvaltochar(dow(stod(QRSRH->ABB_DTINI)))
 			cQuery:= "SELECT PJ_ENTRA1 FROM "+RetSqlName("SPJ")+" SPJ "
@@ -1165,7 +1197,6 @@ Static Function fGetFolh(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 					//abs(QRTUR->PJ_ENTRA1 - val(substr(QRSRH->ABB_HRINI,1,2))) < 1 //Diferença pode ser em minutos
 					nRetF+= 1 //Considera como horário inicial de entrada
 					nQtFtl+= 1 //Soma quantidade de férias
-			//		ConOut('achou faltas gs ' +QRSRH->ABB_DTINI)
 				Endif
 			Endif
 			QRTUR->(dbCloseArea())
@@ -1190,11 +1221,11 @@ Static Function fGetFolh(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 			TEMPSR8->(dbCloseArea())
 		Endif
 		TcQuery cQuery new Alias TEMPSR8
+		conout("## "+cQuery)
 
 		If !TEMPSR8->(eof())
 			if empty(TEMPSR8->R8_DATAFIM) .OR. SUBSTR(TEMPSR8->R8_DATAFIM,1,6) > mv_par01
 				_lafasa := .t.
-			//	ConOut('afastado definitivo ')
 			endif
 			cQuery:= " SELECT * "
 			cQuery+= " FROM "+RetSqlName("ABB")+" ABB "
@@ -1211,6 +1242,7 @@ Static Function fGetFolh(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 			cQuery+= " ABB_LOCAL BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'  "
 
 			tcQuery cQuery new Alias T10
+			conout("## "+cQuery)
 
 			while !T10->(eof()) //.AND. T10->CONT > 0
 
@@ -1226,10 +1258,9 @@ Static Function fGetFolh(cFilQ,cCodTecQ,cLocalQ,cContraQ,_CTIPO)
 				tcQuery cQuery new Alias QRTUR
 				If QRTUR->(!Eof()) .AND. _FLAG 
 					If abs(QRTUR->PJ_ENTRA1 - val(replace(T10->ABB_HRINI,":","."))) < 1
-						//abs(QRTUR->PJ_ENTRA1 - val(substr(QRSRH->ABB_HRINI,1,2))) < 1 //Diferença pode ser em minutos
 						nRetF+= 1 //Considera como horário inicial de entrada
-						nQtFtl+= 1 //Soma quantidade de férias
-					//	ConOut('achou faltas afastamento ' +dtoc(dPerDe11))
+						//nQtFtl+= 1 //Soma quantidade de férias ///
+						nQtdAuse+= 1
 						_FLAG := .F.
 					Endif
 				Endif

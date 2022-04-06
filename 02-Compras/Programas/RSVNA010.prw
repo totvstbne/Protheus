@@ -169,9 +169,10 @@ Static Function fTelaAprov()
 		oMark:AddLegend(aLegenda[nx][1], aLegenda[nx][2], aLegenda[nx][3])
 	Next nx
 
-	oMark:SetSemaphore(.T.)
+	oMark:SetSemaphore(.F.)
 	oMark:SetFieldMark('CR_YOK')
-	oMark:SetAllMark( { || nil } )
+	//oMark:SetAllMark( { || nil } )
+	oMark:SetAllMark( { || u_fMarkPCTOk() } )
 	oMark:SetAfterMark( { || fSelectPC() } )
 	oMark:SetDescription(cDescrp)
 	oMark:SetUseFilter(.T.)
@@ -246,6 +247,9 @@ User Function fAprPC()
 	TcRefresh(RetSqlName("SCR"))
 
 	MsgInfo("Documentos selecionados aprovados","Sucesso")
+	nValsel:= 0
+	oMark:refresh(.T.)
+	oMark:oBrowse:refresh()
 	RestArea(aArea)
 Return
 
@@ -684,3 +688,35 @@ User Function RExec094()
 	RestArea(aArea)
 
 Return Nil
+
+User Function fMarkPCTOk
+	//oMark:AllMark()
+	nValsel:= 0
+	cQuery:= "SELECT R_E_C_N_O_ RECNO FROM "+RetSqlName("SCR")+" SCR "
+	cQuery+= "WHERE SCR.D_E_L_E_T_ = ' ' AND "
+	cQuery+= "CR_FILIAL = '"+xFilial("SCR")+"' AND "
+	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND  "
+	cQuery+="CR_TIPO = 'PC' "
+	tcQuery cQuery new Alias QTOT
+
+	while QTOT->(!eof())
+		SCR->(dbGoto(QTOT->RECNO))
+		Reclock("SCR",.F.)
+		If SCR->CR_YOK = oMark:Mark()
+			SCR->CR_YOK:= space(2)
+		Else
+			SCR->CR_YOK:= oMark:Mark()
+			nValsel+= SCR->CR_TOTAL
+		Endif
+		MsUnlock()
+		QTOT->(dbSkip())
+	enddo
+	QTOT->(dbCloseArea())
+
+	cMsg:= '<font color=red size="5"><b>TOTAL R$ '+transform(nValsel,"@E 9,999,999.99")+' </b> </font>'
+	oTSay:= TSay():Create(oPanelTop2,{|| cMsg },01,01,,,,,,.T.,,,900,10,,,,,,.T.)
+	oMark:oBrowse:refresh()
+	oMark:Refresh(.T.)
+	oDlgAp:refresh()
+
+Return
