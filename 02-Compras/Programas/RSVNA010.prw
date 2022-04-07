@@ -65,7 +65,6 @@ user function RSVNA010()
 //
 //	oAprovPC:Refresh()
 //	ACTIVATE MSDIALOG oAprovPC CENTERED	
-
 //Exemplo: 
 //GravaData(ExpD1,ExpL1,ExpN1)                               
 //
@@ -96,7 +95,6 @@ user function RSVNA010()
 	// Mudado dia 05/06/2019 a pedido do gerardo para retirar a tela de parametros
 	fTelaAprov()
 Return
-
 /*/{Protheus.doc} fTelaAprov
 //TODO Monta a consulta para aprovação em lote
 @author Wilton Lima
@@ -112,10 +110,8 @@ Static Function fTelaAprov()
 	Local aLegenda	:= {}
 	Local aCoors    := FWGetDialogSize( oMainWnd )
 	Local nx  
-
 	// cFiltro := "CR_FILIAL = '" + xFilial("SCR") + "' .AND. CR_USER ==  '" + RetCodUsr() + "' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' "
 	cFiltro := "CR_FILIAL = '" + xFilial("SCR") + "' .AND. CR_USER ==  '" + RetCodUsr() + "' .AND. CR_STATUS = '02' .AND. CR_TIPO = 'PC' "
-
 //	if ( AllTrim(cFilialDe) != "" .AND. (AllTrim(cFilialAte) != "" .AND. AllTrim(cFilialAte) != REPL("Z", LEN(cFilialAte))))
 //		cFiltro += " .AND. CR_FILIAL >= " + cFilialDe + " .AND. CR_FILIAL <= " + cFilialAte + " "
 //	EndIf
@@ -134,41 +130,32 @@ Static Function fTelaAprov()
 //	PutMV( "MV_X_PEDAT", cPedPCAte )
 //	PutMV( "MV_X_EMISD", GravaData(dEmissaoDe, .F., 5) )
 //	PutMV( "MV_X_EMISA", GravaData(dEmissaoAte, .F., 5) )
-
 	cDescrp	:= 'Aprovação de Pedido de Compras.'
-
 	oDlgAp := MSDialog():New(aCoors[1],aCoors[2],aCoors[3],aCoors[4],'Aprovação em Lote',,,.F.,,,,,,.T.,,,.T. )
-
 	aAdd( aLegenda, { "CR_STATUS=='01'", "BR_AZUL" , "Bloqueado (aguardando outros niveis)" })
 	aAdd( aLegenda, { "CR_STATUS=='02'", "DISABLE" , "Aguardando Liberacao do usuario"      })
 	aAdd( aLegenda, { "CR_STATUS=='03'", "ENABLE"  , "Documento Liberado pelo usuario"      })
 	aAdd( aLegenda, { "CR_STATUS=='04'", "BR_PRETO", "Documento Bloqueado pelo usuario"     })
 	aAdd( aLegenda, { "CR_STATUS=='05'", "BR_CINZA", "Documento Liberado por outro usuario" })
 	aAdd( aLegenda, { "CR_STATUS=='06'", "BR_CANCEL","Documento Rejeitado pelo usuário"     })
-
 	oFWLayer := FWLayer():New()
 	oFWLayer:Init( oDlgAp, .F., .T. )
 	oFWLayer:AddLine( 'TOP1', 90, .F. )
 	oFWLayer:AddLine( 'TOP2', 10, .F. )
 	oPanelTop1 := oFWLayer:getLinePanel( 'TOP1' )
 	oPanelTop2 := oFWLayer:getLinePanel( 'TOP2' )
-
 	cMsg  := '<font color=red size="5"><b>TOTAL R$ ' + transform(nValsel, "@E 9,999,999.99") + ' </b> </font>'
 	oTSay := TSay():Create(oPanelTop2, { || cMsg }, 01,01,,,,,,.T.,,,900,10,,,,,,.T.)
-
 	aRotina	:= {}
 	aadd(aRotina, { "Aprovar",  "U_fAprPC",    0, 4, 0, NIL })
 	aadd(aRotina, { "Rejeitar", "U_fRejPC",    0, 4, 0, NIL })
 	aadd(aRotina, { "Marcar",   "u_fMarcaTPC", 0, 4, 0, NIL })
 	//aadd(aRotina, { "Visualizar Pedido Financeiro", "u_fVisuPC()",0,4,0,NIL})
-
 	oMark := FWMarkBrowse():New()
 	oMark:SetAlias('SCR')
-
 	For nx := 1 to len(aLegenda)
 		oMark:AddLegend(aLegenda[nx][1], aLegenda[nx][2], aLegenda[nx][3])
 	Next nx
-
 	oMark:SetSemaphore(.F.)
 	oMark:SetFieldMark('CR_YOK')
 	//oMark:SetAllMark( { || nil } )
@@ -179,9 +166,7 @@ Static Function fTelaAprov()
 	oMark:SetFilterDefault(cFiltro)
 	oMark:Activate(oPanelTop1)
 	oDlgAp:Activate(,,,.T.)	 
-
 	//oAprovPC:End()
-
 Return
 /*/{Protheus.doc} fAprPC
 //TODO Aprovação em lote do pedido de compras
@@ -196,30 +181,23 @@ User Function fAprPC()
 	Local aArea  := getArea()
 	Local cLtAp  := ""
 	Local cQuery := ""
-
 	cQuery := " SELECT R_E_C_N_O_ RECNO  "
 	cQuery += " FROM " + RetSqlName("SCR") + " SCR "
 	cQuery += " WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery += " CR_YOK = '" + oMark:Mark() + "' "
 	cQuery += " ORDER BY R_E_C_N_O_ "
-
 	TcQuery cQuery new Alias TQCR
-
 	If TQCR->(Eof())
 		TQCR->(dbCloseArea())
 		MsgAlert("Não há itens selecionados", "Atenção!")	
 		Return
 	Endif
-
 	//cLtAp := GetSXENum("ZA7", "ZA7_YLOTE", "ZA71")
 	//ConfirmSx8()
-
 	while TQCR->(!Eof())
-
 		SCR->(dbGoto(TQCR->RECNO))
 		// ZA7->(dbSetOrder(3))
 		// ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
-
 		//Processa({||A097ProcLib(SCR->(Recno()),2,,,,"Aprovado em Lote por " + AllTrim(cUserName))}, "Aprovando o Pedido de Compras. " + SCR->CR_NUM)
 		/*Alterado por Alana Oliveira em 21.12.21 - Liberação por execauto*/
 		Processa({||U_MyExec094()}, "Aprovando o Pedido de Compras. " + SCR->CR_NUM)
@@ -227,32 +205,25 @@ User Function fAprPC()
 		//Reclock("SCR",.F.)
 		//	SCR->CR_DATALIB	:= dDataBase
 		//MsUnlock()
-
 		//		ZA7->(dbSetOrder(3))
 		//		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
 		//		
 		//		Reclock("ZA7",.F.)
 		//			ZA7->ZA7_YLOTE := cLtAp
 		//		MsUnlock()
-
 		TQCR->(dbSkip())
-
 	Enddo
-
 	TQCR->(dbCloseArea())
-
 	//Seta para garantir que não será utilizada a marca
 	cUpd := "UPDATE " + RetSqlName("SCR") + " SET CR_YOK = ' ' WHERE CR_YOK = '" + oMark:Mark() + "' AND CR_FILIAL = '" + xFilial("SCR") + "' "
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
-
 	MsgInfo("Documentos selecionados aprovados","Sucesso")
 	nValsel:= 0
 	oMark:refresh(.T.)
 	oMark:oBrowse:refresh()
 	RestArea(aArea)
 Return
-
 /*/{Protheus.doc} fRejPC
 Rejeitar Pedido de Compras
 @author Wilton
@@ -265,63 +236,49 @@ Rejeitar Pedido de Compras
 User Function fRejPC()
 	Local aArea  := getArea()
 	Local cQuery := "" 
-
 	cQuery := "SELECT R_E_C_N_O_ RECNO  "
 	cQuery += "FROM " + RetSqlName("SCR") + " SCR "
 	cQuery += "WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery += "CR_YOK = '" + oMark:Mark() + "' "
 	cQuery += "ORDER BY R_E_C_N_O_ "
-
 	TcQuery cQuery new Alias TQCR
-
 	If TQCR->(Eof())
 		TQCR->(dbCloseArea())
 		MsgAlert("Não há itens selecionados", "Atenção!")	
 		Return
 	Endif
-
 	If !(msgYesNo("Confirma a rejeição do Pedido de Compras?","Rejeição em Lote"))
 		Return
 	Endif
-
 	//	cLtAp := GetSXENum("ZA7", "ZA7_YLOTE", "ZA71")
 	//	ConfirmSx8()
-
 	while TQCR->(!Eof())
 		DbSelectArea("SCR")
 		SCR->(dbGoto(TQCR->RECNO))
-
 		ZA7->(dbSetOrder(3))
 		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
-
 		//Processa( { ||u_fRejeiPC( .T., TQCR->RECNO ) }, "Rejeitando o Pedido de Compras " + SCR->CR_NUM )
 		// Alterado por Alana Olivera em 21.12.21 -> Rejeita através de execauto
 		Processa( { ||u_RExec094()}, "Rejeitando o Pedido de Compras " + SCR->CR_NUM )
-
 //		Reclock("SCR",.F.)
 //		SCR->CR_YLOTE := cLtAp
 //		MsUnlock()
-
 		//		ZA7->(dbSetOrder(3))
 		//		ZA7->(dbSeek(xFilial("ZA7") + AllTrim(SCR->CR_NUM)))
 		//
 		//		Reclock("ZA7",.F.)
 		//			ZA7->ZA7_YLOTE := cLtAp
 		//		MsUnlock()
-
 		TQCR->(dbSkip())
 	Enddo
 	
 	TQCR->(dbCloseArea())
-
 	//Seta para garantir que não será utilizada a marca
 	cUpd := "UPDATE " + RetSqlName("SCR") + " SET CR_YOK = ' ' WHERE CR_YOK = '" + oMark:Mark() + "' AND CR_FILIAL = '" + xFilial("SCR") + "' " 
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
-
 	msgInfo("Documentos selecionados rejeitados","Sucesso")
 	RestArea(aArea)
-
 Return
 /*/{Protheus.doc} fMarcaTudoPC
 Marcação de todos os registros
@@ -335,51 +292,40 @@ Marcação de todos os registros
 User Function fMarcaTPC()
 	Local lMarc  := .F.
 	Local cQuery := "" 
-
 	//Verifica se está marcado
 	cQuery := " SELECT TOP 1 CR_NUM FROM " + RetSqlName("SCR") + " SCR "
 	cQuery += " WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery += " CR_FILIAL = '" + xFilial("SCR") + "' AND "
 	cQuery += " CR_YOK =  '" + oMark:Mark() + "' AND "
 	cQuery += " CR_FILIAL= '" + xFilial("SCR") + "' AND CR_USER = '" + RetCodUsr() + "' AND CR_STATUS = '02' AND CR_TIPO = 'PC' "
-
 	tcQuery cQuery new Alias QRSCR
-
 	//Tem registros
 	If QRSCR->(!Eof())
 		lMarc := .T.
 	Endif
 	QRSCR->(dbCloseArea())
-
 	If lMarc //Desmarca registros
 		cUpd := "UPDATE " + RetSqlName("SCR") + " SET CR_YOK = ' ' WHERE CR_YOK  = '" + oMark:Mark() + "' AND CR_FILIAL = '" + xFilial("SCR") + "' "
 	Else
 		cUpd := "UPDATE " + RetSqlName("SCR") + " SET CR_YOK = '" + oMark:Mark() + "' WHERE CR_YOK <> '" + oMark:Mark() + "' AND CR_FILIAL = '" + xFilial("SCR") + "' "
 	Endif
-
 	cUpd += "AND CR_FILIAL= '" + xFilial("SCR") + "' AND CR_USER = '" + RetCodUsr() + "' AND CR_STATUS = '02' AND CR_TIPO = 'PC' "
 	tcSqlExec(cUpd)
 	TcRefresh(RetSqlName("SCR"))
-
 	cQuery := " SELECT SUM(CR_TOTAL) TOTAL FROM " + RetSqlName("SCR") + " SCR "
 	cQuery += " WHERE SCR.D_E_L_E_T_ = ' ' AND "
 	cQuery += " CR_FILIAL = '" + xFilial("SCR") + "' AND "
 	cQuery += " CR_USER =  '" + RetCodUsr() + "' AND CR_STATUS = '02' AND CR_TIPO = 'PC' AND "
 	cQuery += " CR_YOK = '" + oMark:Mark() + "' "
-
 	tcQuery cQuery new Alias QRSCR
-
 	nValsel := QRSCR->TOTAL //Total selecionado
 	QRSCR->(dbCloseArea())
-
 	cMsg  := '<font color=red size="5"><b>TOTAL R$ ' + transform(nValsel, "@E 9,999,999.99") + ' </b> </font>'
 	oTSay := TSay():Create(oPanelTop2,{|| cMsg },01,01,,,,,,.T.,,,900,10,,,,,,.T.)
-
 	oMark:refresh(.T.)
 	oMark:oBrowse:refresh()
 	oDlgAp:refresh()
 Return
-
 /*/{Protheus.doc} fSelectPC
 Pós marcação
 @author Wilton
@@ -395,10 +341,8 @@ Static Function fSelectPC()
 	Else
 		nValsel -= SCR->CR_TOTAL
 	Endif
-
 	cMsg  := '<font color=red size="5"><b>TOTAL R$ ' + transform(nValsel,"@E 9,999,999.99") + ' </b> </font>'
 	oTSay := TSay():Create(oPanelTop2,{|| cMsg },01,01,,,,,,.T.,,,900,10,,,,,,.T.)
-
 	oMark:oBrowse:refresh()
 	oDlgAp:refresh()
 Return
@@ -453,7 +397,6 @@ User Function zCriaPar(aPars)
     RestArea(aAreaX6)
     RestArea(aArea)
 Return
-
 /*/{Protheus.doc} fRejeiPC
 Rejeição do Pedido Compras
 @author Diogo
@@ -468,14 +411,11 @@ User Function fRejeiPC(lProcLote, cRECNO)
 	Local aRetOpc 	:= {}
 	Local aPergs  	:= {}
 	Local cDescMot	:= ""
-
 	DbSelectArea("SCR")
 	SCR->(dbGoto(cRECNO))
-
 	If SCR->CR_TIPO = "06"
 		Return
 	Endif
-
 	If SCR->CR_TIPO <> "PC"
 		MsgAlert("Rejeição apenas para Pedidos de Compras!", "Atenção!")
 		Return
@@ -492,11 +432,9 @@ User Function fRejeiPC(lProcLote, cRECNO)
 		MsgAlert("Pedido de Compras não localizado", "Atenção!")
 		Return
 	Endif
-
 	If (!lRet)
 		Return
 	Endif
-
 	If (lRet)
 		If !lProcLote
 			If !(msgYesNo("Confirma a rejeição do Pedido de Compras?"))
@@ -511,21 +449,17 @@ User Function fRejeiPC(lProcLote, cRECNO)
 		Else
 			cDescMot := "Rejeição em lote"
 		Endif
-
 		Reclock("SCR", .F.)
 			SCR->CR_STATUS	:= "06"
 			SCR->CR_DATALIB	:= date()
 			SCR->CR_USERLIB	:= retcodusr()
 		msUnlock()
-
 		If (!lProcLote)
 			msgInfo("Pedido de Compras rejeitado com sucesso", "Rejeição.")
 		Endif
 	Endif
 Return
-
 /*Execauto para liberação de documentos*/
-
 User Function MyExec094()
  
     Local oModel094 := Nil      //-- Objeto que receberá o modelo da MATA094
@@ -536,11 +470,9 @@ User Function MyExec094()
     Local lOk       := .T.      //-- Controle de validação e commit
     Local aErro     := {}       //-- Recebe msg de erro de processamento
 	Local aArea     := getArea()
-
     nLenSCR := TamSX3("CR_NUM")[1] //-- Obtem tamanho do campo CR_NUM
     DbSelectArea("SCR")
     SCR->(DbSetOrder(2)) //-- CR_FILIAL+CR_TIPO+CR_NUM+CR_USER
-
 	DbSelectArea("SC7")
     SC7->(dbSetOrder(1))
     		
@@ -600,15 +532,11 @@ User Function MyExec094()
     Else
         MsgInfo("Documento não encontrado!", "MyExec094")
     EndIf
-
 	RestArea(aArea) 
  
 Return Nil
-
 /* Execauto para rejeição de documento*/
-
 User Function RExec094()   
-
     Local oModel094 := Nil                    //-- Objeto que receberá o modelo da MATA094
     Local cNum      := SCR->CR_NUM            //-- Recebe o número do documento a ser avaliado
     Local cTipo     := SCR->CR_TIPO          //-- Recebe o tipo do documento a ser avaliado
@@ -618,11 +546,9 @@ User Function RExec094()
     Local lOk       := .T.                    //-- Controle de validação e commit
     Local aErro     := {}                     //-- Recebe msg de erro de processamento
 	Local aArea     := getArea()
-
     nLenSCR := TamSX3("CR_NUM")[1] //-- Obtem tamanho do campo CR_NUM
     DbSelectArea("SCR")
     SCR->(DbSetOrder(2)) //-- CR_FILIAL+CR_TIPO+CR_NUM+CR_USER
-
  	DbSelectArea("SC7")
     SC7->(dbSetOrder(1))
     		
@@ -675,7 +601,9 @@ User Function RExec094()
             AutoGrLog("Valor anterior: "            + ' [' + AllToChar(aErro[09]) + ']')
  
             //-- Mostra a mensagem de Erro
-            MostraErro()
+            If aErro[05] <> "PCOVLDLAN "
+            	MostraErro()
+            Endif
         EndIf
  
         //-- Desativa o modelo de dados
@@ -684,11 +612,8 @@ User Function RExec094()
     Else
         MsgInfo("Documento não encontrado!", "MyExec094")
     EndIf
-
 	RestArea(aArea)
-
 Return Nil
-
 User Function fMarkPCTOk
 	//oMark:AllMark()
 	nValsel:= 0
@@ -698,7 +623,6 @@ User Function fMarkPCTOk
 	cQuery+="CR_FILIAL= '"+xFilial("SCR")+"' AND CR_USER =  '"+RetCodUsr()+"' AND CR_STATUS = '02' AND  "
 	cQuery+="CR_TIPO = 'PC' "
 	tcQuery cQuery new Alias QTOT
-
 	while QTOT->(!eof())
 		SCR->(dbGoto(QTOT->RECNO))
 		Reclock("SCR",.F.)
@@ -712,11 +636,9 @@ User Function fMarkPCTOk
 		QTOT->(dbSkip())
 	enddo
 	QTOT->(dbCloseArea())
-
 	cMsg:= '<font color=red size="5"><b>TOTAL R$ '+transform(nValsel,"@E 9,999,999.99")+' </b> </font>'
 	oTSay:= TSay():Create(oPanelTop2,{|| cMsg },01,01,,,,,,.T.,,,900,10,,,,,,.T.)
 	oMark:oBrowse:refresh()
 	oMark:Refresh(.T.)
 	oDlgAp:refresh()
-
 Return
