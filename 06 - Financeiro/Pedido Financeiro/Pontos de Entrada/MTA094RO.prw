@@ -22,4 +22,5 @@ user function MTA094RO()
 	aadd(aRotina, { "Estornar Pedido Financeiro","u_fEst01A()",0,4,0,NIL})
 	aadd(aRotina, { "Consulta Aprovação","u_fConsApv()",0,4,0,NIL})
 	aadd(aRotina, { "Aprovação em Lote PC","U_RSVNA010()",0,4,0,NIL})
+	aadd(aRotina, { "Aprovação de Contingência","U_RAPRCTG1()",0,3,0,NIL})
 return aRotina
