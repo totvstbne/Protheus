@@ -522,7 +522,9 @@ User Function MyExec094()
             AutoGrLog("Valor anterior: "            + ' [' + AllToChar(aErro[09]) + ']')
  
             //-- Mostra a mensagem de Erro
-            MostraErro()
+            If aErro[05] <> "PCOVLDLAN "
+            	MostraErro()
+            Endif
 	
         EndIf
  
