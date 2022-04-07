@@ -42,6 +42,10 @@ CCADASTRO:="Contingencias"
 
 If  cProcesso == "000055" // Liberação de pedido de compras
 
+	If SCR->CR_NIVEL <> "01" // Só valida na primeira alçada
+		Return lRet
+	Endif
+
 	cClasse:= IIF(POSICIONE("CTT",1,xFilial("CTT")+SC7->C7_CC,"CTT_YPCO")=="1",CTT->CTT_YCLAOR,"")   
 
 	/* Retorna o saldo do cubo da chave informada em uma determinada data */ 
