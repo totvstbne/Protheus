@@ -523,7 +523,7 @@ Static Function fProcesTrf(cOpcao)
 	Local cFilBkp		:= cFilAnt
 	Local nModBak		:= nModulo
 	Local cModBak		:= cModulo
-	Local nX,nY
+	Local nX,nY,nxBkp
 
 	Private lMsErroAuto := .F.
 	
@@ -543,10 +543,11 @@ Static Function fProcesTrf(cOpcao)
 			aAdd( aCampos, { "RA_MAT"	, aDados[nX][3] } )
 			aAdd( aCampos, { "RA_CC"	, aDados[nX][2] } )
 			aAdd( aAutoItens, { aDados[nX][8], aDados[nX][3], aCampos } )
-	
-			MSExecAuto( {|x,y,z,w| GPEA180(x,y,z,w)}, 6, aAutoItens, dDataTransf, .T. )
-	
-			If !lMsErroAuto
+			nxBkp:= nx
+			PutGlbValue("ERROROTINA","") //Erro no processamento
+			StartJob("u_fPrcSRE", GetEnvServer(), .T.,cEmpAnt, cFilAnt, aAutoItens, dDataTransf, aDados[nX][3])
+			nx:= nxBkp
+			If empty(GetGlbValue("ERROROTINA"))
 				conout("Transferencia efetuada!")
 				dbSelectArea("SRA")
 				dbSetOrder(1)
@@ -564,10 +565,11 @@ Static Function fProcesTrf(cOpcao)
 				Endif
 	
 			Else
-				MostraErro()
-				alert("Erro na Transferencia!")
+				//MostraErro()
+				//alert("Erro na Transferencia!")
+				FWAlertError(GetGlbValue("ERROROTINA"),"Erro na Transferência")
 			EndIf
-
+			PutGlbValue("ERROROTINA","")
 		Next
 
 	ElseIf (cOpcao == "3") // Turnos
@@ -638,10 +640,11 @@ Static Function fProcesTrf(cOpcao)
 			aAdd( aCampos, { "RA_MAT"	, aDados[nX][3] } )
 			aAdd( aCampos, { "RA_CC"	, aDados[nX][2] } )
 			aAdd( aAutoItens, { aDados[nX][8], aDados[nX][3], aCampos } )
-	
-			MSExecAuto( {|x,y,z,w| GPEA180(x,y,z,w)}, 6, aAutoItens, dDataTransf, .T. )
-
-			If !lMsErroAuto
+			nxBkp:= nx
+			PutGlbValue("ERROROTINA","") //Erro no processamento
+			StartJob("u_fPrcSRE", GetEnvServer(), .T.,cEmpAnt, cFilAnt, aAutoItens, dDataTransf, aDados[nX][3])
+			nx:= nxBkp
+			If empty(GetGlbValue("ERROROTINA"))
 				conout("Transferencia efetuada!")
 				dbSelectArea("SRA")
 				dbSetOrder(1)
@@ -659,10 +662,11 @@ Static Function fProcesTrf(cOpcao)
 				Endif
 	
 			Else
-				MostraErro()
-				alert("Erro na Transferencia!")
+				//MostraErro()
+				//alert("Erro na Transferencia!")
+				FWAlertError(GetGlbValue("ERROROTINA"),"Erro na Transferência")
 			EndIf
-
+			PutGlbValue("ERROROTINA","")
 		Next
 
 	
@@ -778,3 +782,28 @@ Static Function fGetSequenCont()
 	Endif	
 	RestArea(aArea)
 Return cSemSq
+
+
+User Function fPrcSRE(cEmpAnt, cFilAnt, aAutoItens, dDataTransf, cMat) 
+	Local nU:= 0
+	Local cErro:= ""
+	Local aErro:= {}
+	RpcSetEnv(cEmpAnt,cFilAnt,,,"GPE")
+    Private lMsErroAuto		:= .F.
+    Private lMsHelpAuto 	:= .T.
+    Private lAutoErrNoFile 	:= .T.
+    Private lAutoExec 		:= .T.
+
+	dbSelectArea("SRA")
+	dbSetOrder(1)
+	SRA->(dbSeek(xFilial("SRA")+ cMat))
+	MSExecAuto( {|x,y,z,w| GPEA180(x,y,z,w)}, 6, aAutoItens, dDataTransf, .T. )
+	If lMsErroAuto
+		aErro := GetAutoGRLog()
+		cErro := ""
+		For nU := 1 to len(aErro)
+			cErro += aErro[nU] + chr(13)+chr(10)
+		Next nU
+		PutGlbValue("ERROROTINA",cErro)
+	Endif
+Return

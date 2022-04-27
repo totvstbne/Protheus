@@ -41,7 +41,7 @@ User Function RTECF002()
 	Local _dDtInicio := Ctod(Space(8))
 	Private dDtInicio:= Ctod(Space(8))
 
-	aAdd(aParam,{1, "Vigerncia Inicial"	, _dDtInicio ,"" ,"" ,"",".T.",80, .T. })
+	aAdd(aParam,{1, "Vigencia Inicial"	, _dDtInicio ,"" ,"" ,"",".T.",80, .T. })
 
 	If ParamBox( aParam, "Parametros Transferencia", @aRetParm,{||.T.} ,,,,,,"U_RTECF002", .F., .F. )
 		If Empty(aRetParm[1])
@@ -270,7 +270,7 @@ User Function RTECF002()
 			//	oModelTFF:SetValue("TFF_PLAREV", T03->TFF_PLAREV)
 				TFF->(DBGOTO(T03->R_E_C_N_O_))
 			//	oModelTFF:SetValue("TFF_CALCMD", TFF->TFF_CALCMD)
-				//oModelTFF:LoadValue("TFJ_TABXML", T03->TFJ_TABXML)
+				oModelTFF:SetValue("TFF_TABXML", TFF->TFF_TABXML)
 
 				cQuery := " "
 				cQuery += " SELECT * FROM "+RetSqlName("TFG")+" TFG (NOLOCK) "
@@ -409,9 +409,9 @@ User Function RTECF002()
 
 	MV_PAR01 := _MVPAR01
 	RestArea(aAreaAtual)
+	u_fReplVig() //Chama a rotina de cálculo conforme XML
 
 Return
-
 
 /*
 User Function RTECF002()
